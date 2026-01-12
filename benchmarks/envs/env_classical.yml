@@ -1,0 +1,10 @@
+name: platevs_classical
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - scikit-learn
+  - rdkit
+  - oddt
+  - pandas
+  - numpy

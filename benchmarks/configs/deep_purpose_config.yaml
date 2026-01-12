@@ -1,0 +1,9 @@
+# Configuration for Deep Purpose Models (DeepDTA, GraphDTA)
+model_architecture: "DeepDTA"
+training:
+  batch_size: 256
+  epochs: 100
+  learning_rate: 0.001
+data:
+  encoding_drug: "CNN"
+  encoding_target: "CNN"

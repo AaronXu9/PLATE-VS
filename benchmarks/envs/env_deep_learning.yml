@@ -1,0 +1,16 @@
+name: platevs_dl
+channels:
+  - pytorch
+  - pyg
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pytorch
+  - pytorch-cuda=11.8
+  - pyg
+  - deepchem
+  - transformers
+  - pip
+  - pip:
+    - DeepPurpose
+    - boltz2
