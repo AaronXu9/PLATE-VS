@@ -88,5 +88,17 @@ class TestPlateVSClient(unittest.TestCase):
         else:
             print("Skipping SDF check (download failed or file not found)")
 
+    def test_07_download_similarity_cif(self):
+        """Test downloading similarity CIF archive."""
+        print("\nTesting similarity CIF download...")
+        path = self.client.download_similarity_cif()
+        
+        if path:
+            self.assertTrue(path.exists())
+            self.assertTrue(path.stat().st_size > 0)
+            print(f"Downloaded CIF archive to {path}")
+        else:
+            print("Skipping CIF check (download failed or file not found)")
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

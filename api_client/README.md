@@ -8,12 +8,23 @@ This client provides programmatic access to the PLATE-VS database, which contain
 
 1. **Search by UniProt ID** - Query affinity data for a specific protein
 2. **Search by SMILES** - Query affinity data for a specific compound (exact or similarity search)
-3. **Download Similarity Matrix Data** - Download CSV and SDF files for given similarity thresholds
+3. **Download Similarity Matrix Data** - Download CSV, SDF, and CIF files for given similarity thresholds
 
 ## Installation
 
+### Option 1: Install via pip (Recommended)
+
+You can install the client directly from GitHub:
+
 ```bash
-# Install dependencies
+pip install https://github.com/AaronXu9/plate-vs-client.git
+```
+
+### Option 2: Clone and Install
+
+```bash
+git clone https://github.com/AaronXu9/plate-vs-client.git
+cd plate-vs-client
 pip install -r requirements.txt
 ```
 
@@ -40,6 +51,7 @@ print(df.head())
 # Download similarity matrix data
 csv_path = client.download_similarity_matrix_csv(0.9, qcov_level=100)
 sdf_path = client.download_similarity_sdf(0.9)
+cif_path = client.download_similarity_cif()
 ```
 
 ## API Reference
@@ -65,6 +77,7 @@ PlateVSClient(timeout=30, output_dir="./platevs_data")
 | `download_affinity_data(query, query_type)` | Download affinity data to CSV |
 | `download_similarity_matrix_csv(threshold, qcov_level)` | Download similarity CSV |
 | `download_similarity_sdf(threshold)` | Download similarity SDF files (tar.gz) |
+| `download_similarity_cif()` | Download raw CIF files (tar.gz) |
 | `download_all_similarity_data(thresholds, qcov_level)` | Bulk download for multiple thresholds |
 | `check_service_status()` | Check if services are accessible |
 

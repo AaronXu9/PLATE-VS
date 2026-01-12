@@ -44,14 +44,19 @@ class PlateVSClient:
     # Available qcov levels for similarity matrix
     QCOV_LEVELS = [50, 70, 95, 100]
     
-    def __init__(self, timeout: int = 30, output_dir: str = "./platevs_data"):
+    def __init__(self, base_url: Optional[str] = None, timeout: int = 30, output_dir: str = "./platevs_data"):
         """
         Initialize the PLATE-VS client.
         
         Args:
+            base_url: Optional base URL to override the default
             timeout: Request timeout in seconds
             output_dir: Directory to save downloaded files
         """
+        if base_url:
+            self.BASE_URL = base_url.rstrip('/')
+            self.API_URL = f"{self.BASE_URL}/api"
+            
         self.timeout = timeout
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -293,28 +298,62 @@ class PlateVSClient:
             print(f"Error downloading SDF files: {e}")
             return None
     
+    def download_similarity_cif(self) -> Optional[Path]:
+        """
+        Download CIF files (zipped) containing raw UniProt structures.
+        
+        Returns:
+            Path to the downloaded CIF archive, or None if failed
+        """
+        endpoint = f"{self.API_URL}/similarity-matrix/download-cif"
+        
+        try:
+            # This endpoint redirects to S3, so we follow redirects
+            response = self.session.get(endpoint, timeout=self.timeout, allow_redirects=True)
+            response.raise_for_status()
+            
+            # Save the tar.gz file
+            zip_filename = "similarity_cif_raw.tar.gz"
+            zip_filepath = self.output_dir / zip_filename
+            
+            with open(zip_filepath, 'wb') as f:
+                f.write(response.content)
+            
+            print(f"Downloaded CIF archive: {zip_filepath}")
+            return zip_filepath
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading CIF files: {e}")
+            return None
+    
     def download_all_similarity_data(
         self, 
         thresholds: List[float] = [0.9, 0.8, 0.7],
         qcov_level: int = 100
     ) -> Dict[float, Dict[str, Optional[Path]]]:
         """
-        Download all similarity data (CSV and SDF) for multiple thresholds.
+        Download all similarity data (CSV, SDF, and CIF) for multiple thresholds.
         
         Args:
             thresholds: List of similarity thresholds to download
             qcov_level: Query coverage level for CSV data
             
         Returns:
-            Dictionary mapping thresholds to their downloaded file paths
+            Dictionary mapping thresholds to their downloaded file paths.
+            Note: The 'cif' file is the same for all thresholds but included in each entry for convenience.
         """
         results = {}
+        
+        # Download CIF once as it is common for all thresholds
+        print(f"\nDownloading CIF archive (common for all thresholds)...")
+        cif_path = self.download_similarity_cif()
         
         for threshold in thresholds:
             print(f"\nDownloading data for threshold {threshold}...")
             results[threshold] = {
                 'csv': self.download_similarity_matrix_csv(threshold, qcov_level),
-                'sdf': self.download_similarity_sdf(threshold)
+                'sdf': self.download_similarity_sdf(threshold),
+                'cif': cif_path
             }
             # Be respectful of the server
             time.sleep(1)

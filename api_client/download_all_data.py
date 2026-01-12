@@ -80,6 +80,17 @@ def main():
             print("✗ Failed")
         
         time.sleep(1.0) # Rate limiting for larger files
+
+    # 3. Download CIFs (Raw Structures)
+    print("\n" + "=" * 40)
+    print("Phase 3: Downloading CIF Archive")
+    print("=" * 40)
+    
+    cif_path = client.download_similarity_cif()
+    if cif_path:
+        print("✓ Done")
+    else:
+        print("✗ Failed")
         
     # Summary
     duration = time.time() - start_time
@@ -89,6 +100,10 @@ def main():
     print(f"Time elapsed: {duration:.2f} seconds")
     print(f"CSVs downloaded: {csv_count}/{len(THRESHOLDS) * len(QCOV_LEVELS)}")
     print(f"SDFs downloaded: {sdf_count}/{len(THRESHOLDS)}")
+    if cif_path:
+        print("CIFs downloaded: 1/1")
+    else:
+        print("CIFs downloaded: 0/1")
     print(f"Data saved to: {Path(OUTPUT_DIR).absolute()}")
 
 if __name__ == "__main__":
