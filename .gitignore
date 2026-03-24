@@ -65,6 +65,9 @@ data/df_uniprotid_smiactives_mindist.csv
 data/uniprot_clusters_annotated.csv
 data/uniprot_bipartite_cluster_labels_filtered.csv
 test_downloads/
+data/decoy_index/decoy_fingerprints.npy
+data/decoy_index/decoy_properties.parquet
+notebooks/compare_decoys_publication.ipynb
 
 # ignore the similarity scores 
 similarity_scores/
@@ -111,3 +114,6 @@ htmlcov/
 dmypy.json
 external/DeepCoy/models/
 external/DeepCoy/models/
+
+# output figs
+figs/
