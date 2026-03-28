@@ -143,52 +143,65 @@ class DataLoader:
 
         return filtered_data
     
-    def prepare_features_labels(self, 
+    def prepare_features_labels(self,
                                 data: pd.DataFrame,
                                 smiles_column: str = 'smiles',
                                 label_column: str = 'is_active',
+                                task: str = 'classification',
                                 include_protein_info: bool = False,
                                 protein_id_column: str = 'uniprot_id') -> Tuple:
         """
         Extract SMILES, labels, and optionally protein info from the data.
-        
+
         Args:
-            data: DataFrame containing the data
-            smiles_column: Name of the column containing SMILES
-            label_column: Name of the column containing labels
-            include_protein_info: Whether to include protein identifiers
-            protein_id_column: Name of the column containing protein IDs
-            
+            data: DataFrame from get_training_data()
+            smiles_column: Column containing SMILES strings
+            label_column: Column for binary labels (used only when task='classification')
+            task: 'classification' returns binary int labels from label_column;
+                  'regression' returns float pchembl values, rows with NaN pchembl excluded
+            include_protein_info: Whether to also return protein identifier list
+            protein_id_column: Column containing protein UniProt IDs
+
         Returns:
-            Tuple of (SMILES list, labels array) or 
+            Tuple of (SMILES list, labels array) or
             (SMILES list, labels array, protein_ids list) if include_protein_info=True
         """
         if smiles_column not in data.columns:
             raise ValueError(f"SMILES column '{smiles_column}' not found in data")
-        
-        if label_column not in data.columns:
-            raise ValueError(f"Label column '{label_column}' not found in data")
-        
+
+        if task == 'regression':
+            if 'pchembl' not in data.columns:
+                raise ValueError(
+                    "Registry does not have a 'pchembl' column. "
+                    "Run assign_protein_splits_soft.py to generate registry_soft_split.csv first."
+                )
+            data = data[data['pchembl'].notna()].copy()
+            labels = data['pchembl'].values.astype(np.float32)
+            print(f"Regression mode: {len(labels)} samples with valid pChEMBL values")
+            print(f"  pChEMBL range: {labels.min():.2f} – {labels.max():.2f} "
+                  f"(mean {labels.mean():.2f})")
+        elif task == 'classification':
+            if label_column not in data.columns:
+                raise ValueError(f"Label column '{label_column}' not found in data")
+            labels = data[label_column].astype(int).values
+            print(f"Prepared {len(labels)} samples with labels")
+            print(f"  Active compounds: {np.sum(labels == 1)}")
+            print(f"  Inactive compounds: {np.sum(labels == 0)}")
+            print(f"  Class balance: {np.mean(labels):.2%} active")
+        else:
+            raise ValueError(
+                f"Unknown task='{task}'. Choose 'classification' or 'regression'."
+            )
+
         smiles = data[smiles_column].tolist()
-        
-        # Convert boolean labels to binary integers
-        labels = data[label_column].astype(int).values
-        
-        print(f"Prepared {len(smiles)} SMILES with labels")
-        print(f"  Active compounds: {np.sum(labels == 1)}")
-        print(f"  Inactive compounds: {np.sum(labels == 0)}")
-        print(f"  Class balance: {np.mean(labels):.2%} active")
-        
+
         if include_protein_info:
             if protein_id_column not in data.columns:
                 raise ValueError(f"Protein ID column '{protein_id_column}' not found in data")
-            
             protein_ids = data[protein_id_column].tolist()
-            n_unique_proteins = len(set(protein_ids))
-            print(f"  Unique proteins: {n_unique_proteins}")
-            
+            print(f"  Unique proteins: {len(set(protein_ids))}")
             return smiles, labels, protein_ids
-        
+
         return smiles, labels
     
     def split_data(self,
