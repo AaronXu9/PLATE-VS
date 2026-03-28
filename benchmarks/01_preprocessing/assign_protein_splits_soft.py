@@ -31,7 +31,6 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 
 def compute_pchembl(affinity_value_nm) -> float:
@@ -86,6 +85,9 @@ def assign_soft_partitions(
     Returns:
         DataFrame with columns ['uniprot', 'protein_cluster', 'protein_partition']
     """
+    if abs(sum(split_ratios) - 1.0) > 1e-6:
+        raise ValueError(f"split_ratios must sum to 1.0, got {sum(split_ratios):.6f}")
+
     rng = np.random.default_rng(seed)
 
     result = cluster_df[['uniprot', cluster_col]].copy()
@@ -117,7 +119,7 @@ def assign_soft_partitions(
         # Assign: first n_train → train, next n_val → val, rest → test
         train_idx = shuffled_idx[:n_train]
         val_idx = shuffled_idx[n_train:n_train + n_val]
-        test_idx = shuffled_idx[n_train + n_val:]
+        test_idx = shuffled_idx[n_train + n_val : n_train + n_val + n_test]
 
         result.loc[val_idx, 'protein_partition'] = 'val'
         result.loc[test_idx, 'protein_partition'] = 'test'
@@ -186,8 +188,8 @@ def build_soft_split_registry(
     cluster_uniprots = set(partition_df['uniprot'])
     missing = registry_uniprots - cluster_uniprots
     if missing:
-        logging.info("  Warning: %d registry proteins not in cluster file → assigned to train",
-                     len(missing))
+        logging.warning("%d registry proteins not in cluster file → assigned to train",
+                        len(missing))
         extra_rows = pd.DataFrame({
             'uniprot': list(missing),
             'protein_cluster': -1,
@@ -231,6 +233,7 @@ def build_soft_split_registry(
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     parser = argparse.ArgumentParser(
         description='Assign soft intra-cluster protein train/val/test splits to the registry.'
     )
