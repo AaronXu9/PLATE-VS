@@ -61,7 +61,9 @@ data/ligand_matches_inchikey.csv
 
 # DeepCoy generated outputs
 external/DeepCoy/*_generated_smiles_zinc
+external/DeepCoy/*_generated_smiles_zinc_*
 external/DeepCoy/*_params_zinc.json
+external/DeepCoy/*_params_zinc_*.json
 external/DeepCoy/*.json
 external/DeepCoy/data/*.json
 !external/DeepCoy/examples/*.json
