@@ -11,6 +11,12 @@ try:
 except ImportError:
     _lifelines_concordance_index = None
 
+try:
+    from scipy import stats as _scipy_stats
+    _SCIPY_AVAILABLE = True
+except ImportError:
+    _SCIPY_AVAILABLE = False
+
 
 def _prepare_arrays(y_true, y_pred):
     true_arr = np.asarray(y_true, dtype=float).reshape(-1)
@@ -84,11 +90,34 @@ def calculate_ci(y_true, y_pred):
     return float(concordant / comparable)
 
 
+def calculate_r2(y_true, y_pred):
+    true_arr, pred_arr = _prepare_arrays(y_true, y_pred)
+    if len(true_arr) < 2:
+        return float("nan")
+    ss_tot = np.sum((true_arr - np.mean(true_arr)) ** 2)
+    if ss_tot == 0.0:
+        return float("nan")
+    ss_res = np.sum((true_arr - pred_arr) ** 2)
+    return float(1.0 - ss_res / ss_tot)
+
+
+def calculate_spearman(y_true, y_pred):
+    true_arr, pred_arr = _prepare_arrays(y_true, y_pred)
+    if len(true_arr) < 2:
+        return float("nan")
+    if not _SCIPY_AVAILABLE:
+        return float("nan")
+    result = _scipy_stats.spearmanr(true_arr, pred_arr)
+    return float(result.correlation)
+
+
 def summarize_regression(y_true, y_pred):
     return {
-        "mse": calculate_mse(y_true, y_pred),
-        "rmse": calculate_rmse(y_true, y_pred),
-        "mae": calculate_mae(y_true, y_pred),
-        "pearson": calculate_pearson(y_true, y_pred),
-        "ci": calculate_ci(y_true, y_pred),
+        "mse":      calculate_mse(y_true, y_pred),
+        "rmse":     calculate_rmse(y_true, y_pred),
+        "mae":      calculate_mae(y_true, y_pred),
+        "r2":       calculate_r2(y_true, y_pred),
+        "pearson":  calculate_pearson(y_true, y_pred),
+        "spearman": calculate_spearman(y_true, y_pred),
+        "ci":       calculate_ci(y_true, y_pred),
     }
