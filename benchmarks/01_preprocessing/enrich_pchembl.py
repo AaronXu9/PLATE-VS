@@ -148,7 +148,8 @@ def build_protein_assay_metadata(
     # affinity_value: back-calculated from pchembl — guaranteed consistent
     # For single-measurement rows: equals the original measured value exactly
     # For multi-measurement rows: geometric mean (correct for log-normal distributions)
-    affinity_val = (10 ** (9 - pchembl_med)).rename('affinity_value').round(4)
+    # No rounding here — rounding would break the round-trip pchembl = 9 - log10(affinity_value)
+    affinity_val = (10 ** (9 - pchembl_med)).rename('affinity_value')
 
     # affinity_type: most frequent standard_type
     affinity_type = grp['standard_type'].agg(
@@ -293,14 +294,23 @@ def main() -> None:
     enriched = registry.copy()
 
     # Columns that already exist in registry — overwrite
-    for col in ['pchembl', 'affinity_value', 'affinity_type']:
+    # Use correct dtype: string columns must be initialized as object to avoid FutureWarning
+    for col in ['pchembl', 'affinity_value']:
         enriched[col] = np.nan
         enriched.loc[chembl_mask, col] = lu_df[col]
+    for col in ['affinity_type']:
+        enriched[col] = pd.NA
+        enriched[col] = enriched[col].astype(object)
+        enriched.loc[chembl_mask, col] = lu_df[col].values
 
     # New columns — add after existing schema
-    for col in ['assay_type_agg', 'document_year', 'n_measurements']:
+    for col in ['document_year', 'n_measurements']:
         enriched[col] = np.nan
         enriched.loc[chembl_mask, col] = lu_df[col]
+    for col in ['assay_type_agg']:
+        enriched[col] = pd.NA
+        enriched[col] = enriched[col].astype(object)
+        enriched.loc[chembl_mask, col] = lu_df[col].values
 
     # Rename assay_type_agg to match schema intent
     enriched = enriched.rename(columns={'assay_type_agg': 'assay_type_enriched'})
