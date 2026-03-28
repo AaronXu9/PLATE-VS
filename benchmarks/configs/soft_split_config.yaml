@@ -1,0 +1,49 @@
+# benchmarks/configs/soft_split_config.yaml
+# Training config for the soft protein partition strategy.
+#
+# Run (classification):
+#   python benchmarks/02_training/train_classical_oddt.py \
+#     --config benchmarks/configs/soft_split_config.yaml \
+#     --registry training_data_full/registry_soft_split.csv \
+#     --use-2d-split
+#
+# Key difference from classical_config.yaml:
+#   - registry_soft_split.csv: proteins split WITHIN clusters (softer generalization test)
+#   - pchembl column available for regression (set data.task: regression below)
+
+model_type: "random_forest"
+
+hyperparameters:
+  n_estimators: 100
+  max_depth: null
+  max_features: 'sqrt'
+  class_weight: 'balanced'
+  random_state: 42
+  n_jobs: -1
+
+features:
+  type: "combined"
+  ligand:
+    type: "morgan_fingerprint"
+    radius: 2
+    n_bits: 2048
+  protein:
+    type: "protein_identifier"
+    embedding_dim: 32
+
+data:
+  similarity_threshold: '0p7'
+  include_decoys: true
+  include_protein_features: true
+  use_2d_split: true          # use protein_partition column from registry_soft_split.csv
+  task: 'classification'      # change to 'regression' to predict pChEMBL values
+  protein_cluster_threshold: qcov_70
+  min_cluster_size_for_split: 3
+  protein_split_ratios: [0.70, 0.15, 0.15]
+
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
