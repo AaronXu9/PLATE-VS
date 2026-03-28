@@ -10,7 +10,11 @@ dependencies:
   - pyg
   - deepchem
   - transformers
+  - gemmi
   - pip
   - pip:
     - DeepPurpose
+    - dgl
+    - dgllife
+    - tensorboard
     - boltz2

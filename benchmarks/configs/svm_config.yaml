@@ -1,0 +1,44 @@
+# Configuration for SVM Model
+# LinearSVC (kernel='linear') is recommended for large datasets (> 50k samples).
+# kernel='rbf' is available but slow beyond ~50k samples.
+
+model_type: "svm"
+
+hyperparameters:
+  kernel: "linear"   # 'linear' (fast/scalable) or 'rbf' (small datasets only)
+  C: 1.0             # Regularization — smaller = more regularization
+  gamma: "scale"     # Only used when kernel='rbf'
+  class_weight: "balanced"
+  random_state: 42
+  max_iter: 2000
+
+features:
+  # SVM works best with Morgan fingerprints (sparse binary vectors)
+  # Combined ligand+protein features also supported
+  type: "combined"
+  ligand:
+    type: "morgan_fingerprint"
+    radius: 2
+    n_bits: 2048
+    use_features: false
+  protein:
+    type: "protein_identifier"
+    embedding_dim: 32
+    use_onehot: false
+  concatenation_method: "concat"
+
+data:
+  similarity_threshold: "0p7"
+  include_decoys: true
+  include_protein_features: true
+  val_split: 0.2
+  test_split: 0.0
+
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+  - avg_precision
+  - mcc

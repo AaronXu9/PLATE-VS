@@ -1,0 +1,38 @@
+{
+  "O00141": {
+    "uniprot_id": "O00141",
+    "pdb_id": "2R5T",
+    "cif_path": "../../plate-vs/VLS_benchmark/zipped_uniprot_raw_cif/uniprot_O00141/cif_files_raw/2R5T.cif",
+    "sequence": "",
+    "resolution": 1.9,
+    "quality_score": 328.5,
+    "method": "'X-RAY DIFFRACTION'",
+    "chosen_ligand": "ANP@A:500(heavy=31)",
+    "pocket_residue_count": 28,
+    "pocket_completeness": 1.0
+  },
+  "O00206": {
+    "uniprot_id": "O00206",
+    "pdb_id": "4G8A",
+    "cif_path": "../../plate-vs/VLS_benchmark/zipped_uniprot_raw_cif/uniprot_O00206/cif_files_raw/4G8A.cif",
+    "sequence": "",
+    "resolution": 2.4,
+    "quality_score": 333.0,
+    "method": "'X-RAY DIFFRACTION'",
+    "chosen_ligand": "LP5@C:203(heavy=48)",
+    "pocket_residue_count": 32,
+    "pocket_completeness": 1.0
+  },
+  "O00238": {
+    "uniprot_id": "O00238",
+    "pdb_id": "3MDY",
+    "cif_path": "../../plate-vs/VLS_benchmark/zipped_uniprot_raw_cif/uniprot_O00238/cif_files_raw/3MDY.cif",
+    "sequence": "",
+    "resolution": 2.05,
+    "quality_score": 324.75,
+    "method": "'X-RAY DIFFRACTION'",
+    "chosen_ligand": "LDN@A:1(heavy=31)",
+    "pocket_residue_count": 28,
+    "pocket_completeness": 1.0
+  }
+}

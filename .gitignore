@@ -68,6 +68,20 @@ test_downloads/
 data/decoy_index/decoy_fingerprints.npy
 data/decoy_index/decoy_properties.parquet
 notebooks/compare_decoys_publication.ipynb
+plate-vs/
+
+benchmarks/01_preprocessing/structure_selection_results/
+
+# Large benchmark artifacts
+benchmarks/02_training/trained_models/
+benchmarks/02_training/trained_models_2d/
+benchmarks/04_docking/results/
+
+# Large training data
+training_data_full/
+
+# Large binary model/data files
+*.h5
 
 # ignore the similarity scores 
 similarity_scores/

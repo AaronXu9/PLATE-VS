@@ -1,9 +1,47 @@
-# Configuration for Deep Purpose Models (DeepDTA, GraphDTA)
+# Configuration for DeepPurpose regression models.
+# Default: DeepDTA (CNN/CNN) for faster prototyping without DGL CUDA issues.
+# Note: GraphDTA (DGL_GCN/CNN) requires GPU-enabled DGL, which may not be available in all environments.
+
+model_type: "deepdta"
 model_architecture: "DeepDTA"
+run_name: "deepdta"
+
+encodings:
+  drug: "CNN"
+  target: "CNN"
+
 training:
-  batch_size: 256
-  epochs: 100
+  batch_size: 128
+  epochs: 30
   learning_rate: 0.001
+  weight_decay: 0.0
+  test_every_n_epochs: 5
+  num_workers: 0
+  cuda_id: null
+
+model:
+  cls_hidden_dims: [1024, 1024, 512]
+  hidden_dim_drug: 128
+  hidden_dim_protein: 128
+  gnn_hid_dim_drug: 64
+  gnn_num_layers: 3
+  cnn_target_filters: [32, 64, 96]
+  cnn_target_kernels: [4, 8, 12]
+  cnn_drug_filters: [32, 64, 96]
+  cnn_drug_kernels: [4, 6, 8]
+
 data:
-  encoding_drug: "CNN"
-  encoding_target: "CNN"
+  similarity_threshold: "0p7"
+  use_precomputed_split: true
+  val_split: 0.2
+  random_state: 42
+  only_actives: true
+  require_affinity: true
+  affinity_types: []
+
+target:
+  transform: "pIC50"
+  unit_assumption: "nM"
+
+logging:
+  verbose: true
