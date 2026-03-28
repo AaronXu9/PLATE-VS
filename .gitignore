@@ -131,3 +131,7 @@ external/DeepCoy/models/
 
 # output figs
 figs/
+# Regression model binaries (large)
+trained_models/**/*.pkl
+trained_models/**/*.log
+trained_models/**/*_protein_mapping.json

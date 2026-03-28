@@ -1,0 +1,45 @@
+{
+  "train_metrics": {
+    "mse": 0.46801680329509737,
+    "rmse": 0.6841175361698437,
+    "mae": 0.5361830626959553,
+    "r2": 0.7128977213846592,
+    "pearson": 0.8531719527397292,
+    "spearman": 0.8495403961225728,
+    "ci": 0.8318054383383398
+  },
+  "training_time": 32.72530817985535,
+  "n_train_samples": 84978,
+  "hyperparameters": {
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "max_depth": null,
+    "max_leaf_nodes": 63,
+    "min_samples_leaf": 20,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "l2_regularization": 0.1,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "backend": "hist",
+  "val_metrics": {
+    "mse": 1.4715543059662108,
+    "rmse": 1.213076380928345,
+    "mae": 0.9755706486844027,
+    "r2": -0.20262477595376183,
+    "pearson": 0.2883851534875828,
+    "spearman": 0.2940034173609521,
+    "ci": 0.5999334140891701
+  },
+  "n_val_samples": 13292,
+  "test_metrics": {
+    "mse": 1.8283276083716336,
+    "rmse": 1.3521566508255,
+    "mae": 1.1213923215808734,
+    "r2": -0.3582482005976051,
+    "pearson": 0.2883385651687049,
+    "spearman": 0.2961793110847628,
+    "ci": 0.6008483675882281
+  }
+}

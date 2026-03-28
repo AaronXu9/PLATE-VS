@@ -1,0 +1,41 @@
+{
+  "model_type": "svm",
+  "task": "regression",
+  "backend": null,
+  "hyperparameters": {
+    "C": 1.0,
+    "epsilon": 0.1,
+    "max_iter": 2000,
+    "random_state": 42
+  },
+  "features": {
+    "type": "combined",
+    "ligand": {
+      "type": "morgan_fingerprint",
+      "radius": 2,
+      "n_bits": 2048,
+      "use_features": false
+    },
+    "protein": {
+      "type": "protein_identifier",
+      "embedding_dim": 32,
+      "use_onehot": false
+    },
+    "concatenation_method": "concat"
+  },
+  "data": {
+    "similarity_threshold": "0p7",
+    "include_decoys": false,
+    "include_protein_features": true,
+    "task": "regression",
+    "use_2d_split": true
+  },
+  "metrics": [
+    "rmse",
+    "mae",
+    "r2",
+    "pearson",
+    "spearman",
+    "ci"
+  ]
+}
