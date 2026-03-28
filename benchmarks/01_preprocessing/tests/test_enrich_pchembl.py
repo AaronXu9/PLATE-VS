@@ -5,15 +5,17 @@ import pytest
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from enrich_pchembl import aggregate_pchembl, enrich_registry, build_protein_pchembl_map
+from enrich_pchembl import aggregate_pchembl, enrich_registry, build_protein_pchembl_map, build_protein_assay_metadata
 
 
 def _make_filtered_activities(rows):
     """Make activities in filtered_chembl_affinity.parquet format."""
-    return pd.DataFrame(rows, columns=[
+    df = pd.DataFrame(rows, columns=[
         'source_uniprot_id', 'canonical_smiles', 'pchembl_value',
         'assay_type', 'standard_type'
     ])
+    df['document_year'] = 2020.0  # default year for tests that don't care about it
+    return df
 
 
 def _make_activities(rows):
@@ -127,4 +129,75 @@ class TestBuildProteinPChEMBLMap:
     def test_empty_returns_empty_series(self):
         acts = _make_filtered_activities([])
         result = build_protein_pchembl_map(acts)
+        assert len(result) == 0
+
+
+class TestBuildProteinAssayMetadata:
+    def test_affinity_value_consistent_with_pchembl(self):
+        """affinity_value = 10^(9 - pchembl) must hold exactly."""
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'B', 'IC50'),
+        ])
+        result = build_protein_assay_metadata(acts)
+        row = result.loc[('P00000', 'CCO')]
+        assert pytest.approx(row['pchembl'], abs=1e-6) == 7.0
+        expected_affinity = 10 ** (9 - 7.0)  # 100.0 nM
+        assert pytest.approx(row['affinity_value'], abs=1e-3) == expected_affinity
+        # Consistency: round-trip
+        reconstructed_pchembl = 9 - np.log10(row['affinity_value'])
+        assert pytest.approx(reconstructed_pchembl, abs=1e-4) == row['pchembl']
+
+    def test_affinity_value_consistent_with_median_pchembl(self):
+        """For multiple measurements, affinity_value = 10^(9 - median_pchembl)."""
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 6.0, 'B', 'IC50'),
+            ('P00000', 'CCO', 8.0, 'B', 'IC50'),
+        ])
+        result = build_protein_assay_metadata(acts)
+        row = result.loc[('P00000', 'CCO')]
+        assert pytest.approx(row['pchembl'], abs=1e-6) == 7.0
+        expected_affinity = 10 ** (9 - 7.0)  # 100.0 nM
+        assert pytest.approx(row['affinity_value'], abs=1e-3) == expected_affinity
+
+    def test_affinity_type_is_mode(self):
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'B', 'IC50'),
+            ('P00000', 'CCO', 7.5, 'B', 'IC50'),
+            ('P00000', 'CCO', 6.5, 'B', 'Ki'),
+        ])
+        result = build_protein_assay_metadata(acts)
+        assert result.loc[('P00000', 'CCO'), 'affinity_type'] == 'IC50'
+
+    def test_document_year_is_max(self):
+        acts = pd.DataFrame([
+            ('P00000', 'CCO', 7.0, 'B', 'IC50', 2010.0),
+            ('P00000', 'CCO', 7.5, 'B', 'IC50', 2020.0),
+        ], columns=['source_uniprot_id', 'canonical_smiles', 'pchembl_value',
+                    'assay_type', 'standard_type', 'document_year'])
+        result = build_protein_assay_metadata(acts)
+        assert result.loc[('P00000', 'CCO'), 'document_year'] == 2020.0
+
+    def test_n_measurements_counts_raw_rows(self):
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'B', 'IC50'),
+            ('P00000', 'CCO', 8.0, 'B', 'IC50'),
+            ('P00000', 'CCC', 6.0, 'B', 'Ki'),
+        ])
+        result = build_protein_assay_metadata(acts)
+        assert result.loc[('P00000', 'CCO'), 'n_measurements'] == 2
+        assert result.loc[('P00000', 'CCC'), 'n_measurements'] == 1
+
+    def test_protein_consistent_separate_entries(self):
+        """Same SMILES against two proteins gives separate rows."""
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'B', 'IC50'),
+            ('P00001', 'CCO', 5.0, 'B', 'Ki'),
+        ])
+        result = build_protein_assay_metadata(acts)
+        assert pytest.approx(result.loc[('P00000', 'CCO'), 'pchembl'], abs=1e-6) == 7.0
+        assert pytest.approx(result.loc[('P00001', 'CCO'), 'pchembl'], abs=1e-6) == 5.0
+
+    def test_empty_returns_empty_dataframe(self):
+        acts = _make_filtered_activities([])
+        result = build_protein_assay_metadata(acts)
         assert len(result) == 0

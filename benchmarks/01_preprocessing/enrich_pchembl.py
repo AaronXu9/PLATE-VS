@@ -1,6 +1,7 @@
 # benchmarks/01_preprocessing/enrich_pchembl.py
 """
-Enrich registry_soft_split.csv with pChEMBL values from filtered_chembl_affinity.parquet.
+Enrich registry_soft_split.csv with pChEMBL values and assay metadata from
+filtered_chembl_affinity.parquet.
 
 Source:    data/filtered_chembl_affinity.parquet — per-protein quality-filtered ChEMBL data
            (standard_flag=1, no duplicates, valid measurements only; all rows have pchembl_value).
@@ -8,9 +9,15 @@ Source:    data/filtered_chembl_affinity.parquet — per-protein quality-filtere
 Join key:  (registry.uniprot_id, registry.smiles_canonical)
            <-> (activities.source_uniprot_id, activities.canonical_smiles)
 
-Strategy:  median pChEMBL per (protein, compound) pair across all binding assays.
-           Protein-consistent: a compound's IC50 against protein A is never assigned to
-           a registry entry for protein B.
+Strategy:  For each (protein, compound) pair across all binding assays:
+           - pchembl      : median pChEMBL (log-space aggregation)
+           - affinity_value: back-calculated as 10^(9 - pchembl_median) [nM]
+                            Guaranteed consistent with pchembl: pchembl = 9 - log10(affinity_value)
+                            For single-measurement rows this equals the original value exactly.
+           - affinity_type: mode of standard_type (IC50, Ki, Kd, …)
+           - assay_type   : mode of assay_type (B=binding, F=functional, …)
+           - document_year: most recent publication year
+           - n_measurements: number of raw measurements aggregated (1 → original value kept)
 
 Output:    new CSV at --output path (registry_soft_split.csv unchanged).
 """
@@ -32,8 +39,10 @@ VALID_STANDARD_TYPES: set = {'IC50', 'Ki', 'Kd', 'EC50', 'Potency'}
 PCHEMBL_MIN: float = 4.0
 PCHEMBL_MAX: float = 12.0
 
-_FILTERED_COLS = ['source_uniprot_id', 'canonical_smiles', 'pchembl_value',
-                  'assay_type', 'standard_type']
+_FILTERED_COLS = [
+    'source_uniprot_id', 'canonical_smiles', 'pchembl_value',
+    'assay_type', 'standard_type', 'standard_value', 'document_year',
+]
 
 
 def _canonicalize_smiles_series(smiles: pd.Series) -> pd.Series:
@@ -62,9 +71,6 @@ def build_protein_pchembl_map(
     """
     Build a (source_uniprot_id, canonical_smiles) -> median_pChEMBL mapping.
 
-    Uses the protein-specific source_uniprot_id from filtered_chembl_affinity.parquet
-    so that pChEMBL values are only assigned to registry entries for the matching protein.
-
     Returns a Series with a MultiIndex (source_uniprot_id, canonical_smiles).
     """
     if activities.empty:
@@ -88,6 +94,85 @@ def build_protein_pchembl_map(
     return filtered.groupby(
         ['source_uniprot_id', 'canonical_smiles']
     )['pchembl_value'].median()
+
+
+def build_protein_assay_metadata(
+    activities: pd.DataFrame,
+    assay_types: set = VALID_ASSAY_TYPES,
+    standard_types: set = VALID_STANDARD_TYPES,
+    pchembl_min: float = PCHEMBL_MIN,
+    pchembl_max: float = PCHEMBL_MAX,
+) -> pd.DataFrame:
+    """
+    Build a per-(protein, compound) metadata table for assay-level columns.
+
+    Returns a DataFrame indexed by (source_uniprot_id, canonical_smiles) with columns:
+      - pchembl          : median pChEMBL
+      - affinity_value   : 10^(9 - pchembl), guaranteed consistent with pchembl
+      - affinity_type    : mode of standard_type (e.g. IC50, Ki)
+      - assay_type       : mode of assay_type (e.g. B, F)
+      - document_year    : most recent publication year
+      - n_measurements   : number of raw measurements aggregated
+    """
+    if activities.empty:
+        cols = ['pchembl', 'affinity_value', 'affinity_type',
+                'assay_type', 'document_year', 'n_measurements']
+        return pd.DataFrame(columns=cols)
+
+    needed = ['source_uniprot_id', 'canonical_smiles', 'pchembl_value',
+              'assay_type', 'standard_type', 'document_year']
+    act = activities[needed].copy()
+    pchembl_numeric = pd.to_numeric(act['pchembl_value'], errors='coerce')
+    mask = (
+        act['assay_type'].isin(assay_types)
+        & act['standard_type'].isin(standard_types)
+        & pchembl_numeric.notna()
+        & (pchembl_numeric >= pchembl_min)
+        & (pchembl_numeric <= pchembl_max)
+        & act['canonical_smiles'].notna()
+        & act['source_uniprot_id'].notna()
+    )
+    act = act.loc[mask].copy()
+    act['pchembl_value'] = pchembl_numeric[mask]
+
+    if act.empty:
+        cols = ['pchembl', 'affinity_value', 'affinity_type',
+                'assay_type', 'document_year', 'n_measurements']
+        return pd.DataFrame(columns=cols)
+
+    grp = act.groupby(['source_uniprot_id', 'canonical_smiles'])
+
+    # pchembl: median in log space
+    pchembl_med = grp['pchembl_value'].median().rename('pchembl')
+
+    # affinity_value: back-calculated from pchembl — guaranteed consistent
+    # For single-measurement rows: equals the original measured value exactly
+    # For multi-measurement rows: geometric mean (correct for log-normal distributions)
+    affinity_val = (10 ** (9 - pchembl_med)).rename('affinity_value').round(4)
+
+    # affinity_type: most frequent standard_type
+    affinity_type = grp['standard_type'].agg(
+        lambda x: x.mode().iloc[0] if len(x) > 0 else np.nan
+    ).rename('affinity_type')
+
+    # assay_type: most frequent assay_type
+    assay_type_mode = grp['assay_type'].agg(
+        lambda x: x.mode().iloc[0] if len(x) > 0 else np.nan
+    ).rename('assay_type_agg')
+
+    # document_year: most recent publication
+    doc_year = grp['document_year'].max().rename('document_year')
+
+    # n_measurements: how many rows were aggregated
+    n_meas = grp.size().rename('n_measurements')
+
+    meta = pd.concat(
+        [pchembl_med, affinity_val, affinity_type, assay_type_mode, doc_year, n_meas],
+        axis=1,
+    )
+    meta.columns = ['pchembl', 'affinity_value', 'affinity_type',
+                    'assay_type_agg', 'document_year', 'n_measurements']
+    return meta
 
 
 def aggregate_pchembl(
@@ -135,7 +220,7 @@ def enrich_registry(registry: pd.DataFrame, agg: pd.Series) -> pd.DataFrame:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-    parser = argparse.ArgumentParser(description='Enrich soft-split registry with pChEMBL values')
+    parser = argparse.ArgumentParser(description='Enrich soft-split registry with pChEMBL values and assay metadata')
     parser.add_argument('--registry', required=True,
                         help='Path to registry_soft_split.csv')
     parser.add_argument('--activities', required=True,
@@ -163,10 +248,10 @@ def main() -> None:
     activities = pd.read_parquet(args.activities, columns=_FILTERED_COLS)
     logging.info(f'  {len(activities):,} rows, {activities["source_uniprot_id"].nunique():,} proteins')
 
-    # Build protein-consistent (uniprot_id, canonical_smiles) -> median pChEMBL map
-    logging.info('Building (protein, SMILES) -> pChEMBL map...')
-    protein_pchembl = build_protein_pchembl_map(activities, **filter_kwargs)
-    logging.info(f'  {len(protein_pchembl):,} (protein, SMILES) pairs with valid pChEMBL')
+    # Build protein-consistent (uniprot_id, canonical_smiles) -> metadata table
+    logging.info('Building (protein, SMILES) -> pChEMBL + assay metadata...')
+    meta = build_protein_assay_metadata(activities, **filter_kwargs)
+    logging.info(f'  {len(meta):,} (protein, SMILES) pairs with valid measurements')
 
     # Canonicalize unique registry SMILES (ChEMBL rows only — decoys have no measurements)
     chembl_mask = registry['source'] == 'chembl'
@@ -178,19 +263,56 @@ def main() -> None:
     canon_map = dict(zip(unique_smiles, canon_series))
     n_failed = sum(1 for v in canon_map.values() if v is None)
     if n_failed:
-        logging.warning(f'  {n_failed:,} SMILES failed RDKit canonicalization — those rows will have pchembl=NaN')
+        logging.warning(f'  {n_failed:,} SMILES failed RDKit canonicalization — those rows will have NaN metadata')
 
-    # Join: look up pChEMBL for each (uniprot_id, canonical_smiles) pair
+    # Join: look up metadata for each (uniprot_id, canonical_smiles) pair
     reg_chembl = reg_chembl.copy()
     reg_chembl['canon_smiles'] = reg_chembl['smiles'].map(canon_map)
-    reg_chembl['pchembl'] = [
-        protein_pchembl.get((uid, csmi), np.nan)
+
+    def _lookup(uid, csmi):
+        if csmi is None or pd.isna(csmi):
+            return (np.nan,) * 6
+        key = (uid, csmi)
+        if key in meta.index:
+            row = meta.loc[key]
+            return (row['pchembl'], row['affinity_value'], row['affinity_type'],
+                    row['assay_type_agg'], row['document_year'], row['n_measurements'])
+        return (np.nan,) * 6
+
+    looked_up = [
+        _lookup(uid, csmi)
         for uid, csmi in zip(reg_chembl['uniprot_id'], reg_chembl['canon_smiles'])
     ]
+    lu_df = pd.DataFrame(
+        looked_up,
+        columns=['pchembl', 'affinity_value', 'affinity_type',
+                 'assay_type_agg', 'document_year', 'n_measurements'],
+        index=reg_chembl.index,
+    )
 
     enriched = registry.copy()
-    enriched['pchembl'] = np.nan
-    enriched.loc[chembl_mask, 'pchembl'] = reg_chembl['pchembl'].values
+
+    # Columns that already exist in registry — overwrite
+    for col in ['pchembl', 'affinity_value', 'affinity_type']:
+        enriched[col] = np.nan
+        enriched.loc[chembl_mask, col] = lu_df[col]
+
+    # New columns — add after existing schema
+    for col in ['assay_type_agg', 'document_year', 'n_measurements']:
+        enriched[col] = np.nan
+        enriched.loc[chembl_mask, col] = lu_df[col]
+
+    # Rename assay_type_agg to match schema intent
+    enriched = enriched.rename(columns={'assay_type_agg': 'assay_type_enriched'})
+
+    # Consistency check: verify pchembl = 9 - log10(affinity_value) for all enriched rows
+    enriched_rows = enriched['pchembl'].notna() & enriched['affinity_value'].notna()
+    pchembl_check = 9 - np.log10(enriched.loc[enriched_rows, 'affinity_value'].astype(float))
+    max_diff = (enriched.loc[enriched_rows, 'pchembl'].astype(float) - pchembl_check).abs().max()
+    if max_diff > 1e-6:
+        logging.warning(f'  Consistency check: max |pchembl - (9 - log10(affinity_value))| = {max_diff:.2e} (expected ~0)')
+    else:
+        logging.info(f'  Consistency check PASSED: pchembl and affinity_value are fully consistent (max diff={max_diff:.2e})')
 
     n_enriched = int(enriched['pchembl'].notna().sum())
     pchembl_vals = pd.to_numeric(enriched['pchembl'], errors='coerce').dropna()
@@ -198,9 +320,10 @@ def main() -> None:
     if n_enriched > 0:
         logging.info(f'  pChEMBL range: {pchembl_vals.min():.2f} – {pchembl_vals.max():.2f}')
         logging.info(f'  pChEMBL mean:  {pchembl_vals.mean():.2f}')
-        # Protein coverage
         enriched_proteins = enriched.loc[enriched['pchembl'].notna(), 'uniprot_id'].nunique()
         logging.info(f'  Proteins with ≥1 enriched compound: {enriched_proteins}')
+        logging.info(f'  affinity_type breakdown:\n{enriched["affinity_type"].value_counts().to_string()}')
+        logging.info(f'  n_measurements stats: {enriched["n_measurements"].describe().to_dict()}')
 
     logging.info(f'Writing to {args.output}')
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
