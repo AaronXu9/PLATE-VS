@@ -180,6 +180,9 @@ def main() -> None:
         if len(unique_smiles) > 0:
             canon_series = _canonicalize_smiles_series(pd.Series(unique_smiles), n_jobs=args.n_jobs)
             canon_map = dict(zip(unique_smiles, canon_series))
+            n_failed = sum(1 for v in canon_map.values() if v is None)
+            if n_failed:
+                logging.warning(f'  {n_failed:,} SMILES failed RDKit canonicalization — those rows will have pchembl=NaN')
 
         # Map: registry smiles -> canonical -> pchembl
         reg_canon = reg_chembl_smiles.map(canon_map)
@@ -187,7 +190,7 @@ def main() -> None:
 
         enriched = registry.copy()
         enriched['pchembl'] = np.nan
-        enriched.loc[chembl_mask, 'pchembl'] = pchembl_values.values
+        enriched.loc[chembl_mask, 'pchembl'] = pchembl_values
 
     else:
         logging.info('Aggregating pChEMBL...')
