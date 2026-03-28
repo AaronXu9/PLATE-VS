@@ -5,7 +5,15 @@ import pytest
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from enrich_pchembl import aggregate_pchembl, enrich_registry
+from enrich_pchembl import aggregate_pchembl, enrich_registry, build_protein_pchembl_map
+
+
+def _make_filtered_activities(rows):
+    """Make activities in filtered_chembl_affinity.parquet format."""
+    return pd.DataFrame(rows, columns=[
+        'source_uniprot_id', 'canonical_smiles', 'pchembl_value',
+        'assay_type', 'standard_type'
+    ])
 
 
 def _make_activities(rows):
@@ -87,3 +95,36 @@ class TestEnrichRegistry:
         agg = pd.Series({'CHEMBL1': 7.0})
         result = enrich_registry(registry, agg)
         assert len(result) == 3
+
+
+class TestBuildProteinPChEMBLMap:
+    def test_multiindex_keyed_by_protein_and_smiles(self):
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'B', 'Ki'),
+            ('P00001', 'CCO', 5.0, 'B', 'Ki'),   # same SMILES, different protein
+        ])
+        result = build_protein_pchembl_map(acts)
+        assert pytest.approx(result[('P00000', 'CCO')]) == 7.0
+        assert pytest.approx(result[('P00001', 'CCO')]) == 5.0
+
+    def test_median_across_multiple_assays(self):
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 6.0, 'B', 'IC50'),
+            ('P00000', 'CCO', 8.0, 'B', 'IC50'),
+        ])
+        result = build_protein_pchembl_map(acts)
+        assert pytest.approx(result[('P00000', 'CCO')]) == 7.0
+
+    def test_filters_non_binding_assays(self):
+        acts = _make_filtered_activities([
+            ('P00000', 'CCO', 7.0, 'F', 'Ki'),   # functional — excluded
+            ('P00000', 'CCC', 6.0, 'B', 'Ki'),
+        ])
+        result = build_protein_pchembl_map(acts, assay_types={'B'})
+        assert ('P00000', 'CCO') not in result.index
+        assert ('P00000', 'CCC') in result.index
+
+    def test_empty_returns_empty_series(self):
+        acts = _make_filtered_activities([])
+        result = build_protein_pchembl_map(acts)
+        assert len(result) == 0
