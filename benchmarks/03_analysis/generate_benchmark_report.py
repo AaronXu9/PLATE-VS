@@ -145,29 +145,29 @@ def print_all_splits(rows: list[dict]) -> None:
 def generate_report(results_dir: str, output_csv: str = None,
                     split: str = 'all', verbose: bool = False,
                     docking_dir: str = None,
-                    extra_dirs_cli: list = None) -> list[dict]:
+                    extra_dirs: list = None) -> list[dict]:
     results_path = Path(results_dir)
     if not results_path.exists():
         print(f"Error: results directory not found: {results_dir}", file=sys.stderr)
         sys.exit(1)
 
-    extra_dirs = []
+    extra_paths = []
     if docking_dir:
         docking_path = Path(docking_dir)
         if docking_path.exists():
-            extra_dirs.append(docking_path)
+            extra_paths.append(docking_path)
         else:
             print(f"Warning: docking dir not found: {docking_dir}", file=sys.stderr)
 
-    if extra_dirs_cli:
-        for p in extra_dirs_cli:
+    if extra_dirs:
+        for p in extra_dirs:
             ep = Path(p)
             if ep.exists():
-                extra_dirs.append(ep)
+                extra_paths.append(ep)
             else:
                 print(f"Warning: extra dir not found: {p}", file=sys.stderr)
 
-    summaries = collect_summaries(results_path, extra_dirs)
+    summaries = collect_summaries(results_path, extra_paths)
     if not summaries:
         print(f"No *_training_summary.json files found in {results_dir}")
         print("Run train_classical_oddt.py first to generate results.")
@@ -254,8 +254,14 @@ def main():
         help='Additional directories to scan for *_training_summary.json files'
     )
     args = parser.parse_args()
-    generate_report(args.results_dir, args.output, args.split, args.verbose,
-                    args.docking_dir, args.extra_dirs)
+    generate_report(
+        results_dir=args.results_dir,
+        output_csv=args.output,
+        split=args.split,
+        verbose=args.verbose,
+        docking_dir=args.docking_dir,
+        extra_dirs=args.extra_dirs,
+    )
 
 
 if __name__ == "__main__":
