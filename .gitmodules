@@ -1,3 +1,6 @@
 [submodule "external/plate-vs-website"]
 	path = external/plate-vs-website
 	url = https://github.com/yongchand/plate-vs.git
+[submodule "external/boltzina"]
+	path = external/boltzina
+	url = https://github.com/ohuelab/boltzina

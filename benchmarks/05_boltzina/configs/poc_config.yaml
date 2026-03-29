@@ -1,0 +1,12 @@
+# benchmarks/05_boltzina/configs/poc_config.yaml
+registry: training_data_full/registry_soft_split_regression.csv
+base_dir: /home/aoxu/projects/VLS-Benchmark-Dataset
+results_dir: benchmarks/05_boltzina/results
+similarity_threshold: "0p7"
+n_proteins: 10
+min_actives: 50
+min_pchembl_coverage: 0.80
+n_decoys_ratio: 50
+max_decoys: 2500
+vina_box_size: [22.0, 22.0, 22.0]
+boltzina_env: boltzina_env

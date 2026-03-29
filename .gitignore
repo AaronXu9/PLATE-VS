@@ -150,3 +150,5 @@ figs/
 trained_models/**/*.pkl
 trained_models/**/*.log
 trained_models/**/*_protein_mapping.json
+
+benchmarks/05_boltzina/results/
