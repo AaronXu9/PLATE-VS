@@ -152,3 +152,5 @@ trained_models/**/*.log
 trained_models/**/*_protein_mapping.json
 
 benchmarks/05_boltzina/results/
+!benchmarks/05_boltzina/lib/
+!benchmarks/05_boltzina/lib/__init__.py
