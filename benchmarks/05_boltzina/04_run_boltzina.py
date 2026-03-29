@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / 'lib'))
-from boltz_prep import get_receptor_pdb
+from boltz_prep import get_receptor_pdb, get_boltz_results_dir
 from boltzina_runner import collect_ligand_paths, write_boltzina_config, run_boltzina
 
 
@@ -33,6 +33,7 @@ def main():
             continue
 
         work_dir = results_dir / 'work_dirs' / uid
+        boltz_results = get_boltz_results_dir(str(work_dir), uid)
         vina_config = work_dir / 'vina_config.txt'
         receptor_pdb = get_receptor_pdb(str(work_dir), uid)
         ligand_files = collect_ligand_paths(str(results_dir / 'ligands'), uid)
@@ -40,7 +41,7 @@ def main():
         print(f'[{i}/{len(proteins)}] {uid}: {len(ligand_files)} ligands...')
         config_path = write_boltzina_config(
             uid=uid,
-            work_dir=str(work_dir),
+            work_dir=str(boltz_results),
             vina_config=str(vina_config),
             receptor_pdb=receptor_pdb,
             ligand_files=ligand_files,

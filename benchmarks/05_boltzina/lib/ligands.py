@@ -92,18 +92,18 @@ def prep_protein_ligands(protein, registry_df, results_dir, base_dir):
     decoys_dir.mkdir(parents=True, exist_ok=True)
 
     # --- Actives ---
+    # Deduplicate by SMILES (compound_id is null in some registry versions)
     actives = registry_df[
         (registry_df['uniprot_id'] == uid) &
         (registry_df['similarity_threshold'] == '0p7') &
         (registry_df['protein_partition'] == 'test') &
         (registry_df['split'] == 'test') &
         (registry_df['is_active'] == True)
-    ][['compound_id', 'smiles']].drop_duplicates('compound_id')
+    ][['smiles']].drop_duplicates('smiles')
 
     n_actives_written = n_failed = 0
-    for _, row in actives.iterrows():
-        cid = str(row['compound_id'])
-        out_path = actives_dir / f'{cid}.pdb'
+    for i, (_, row) in enumerate(actives.iterrows()):
+        out_path = actives_dir / f'active_{i:05d}.pdb'
         if out_path.exists():
             continue
         smiles = str(row['smiles']).split()[0]  # handle paired format

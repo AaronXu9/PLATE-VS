@@ -49,7 +49,8 @@ def test_write_boltz_yaml(tmp_path):
 
 def test_get_receptor_pdb_canonical(tmp_path):
     uid = 'O00408'
-    pdb_file = tmp_path / 'predictions' / uid / f'{uid}_model_0_protein.pdb'
+    pdb_file = (tmp_path / f'boltz_results_{uid}' / 'predictions'
+                / uid / f'{uid}_model_0_protein.pdb')
     pdb_file.parent.mkdir(parents=True)
     pdb_file.write_text('ATOM  ...')
     result = get_receptor_pdb(str(tmp_path), uid)
@@ -58,8 +59,9 @@ def test_get_receptor_pdb_canonical(tmp_path):
 
 def test_get_receptor_pdb_fallback(tmp_path):
     uid = 'O00408'
-    # Fallback: file with different naming
-    pdb_file = tmp_path / 'predictions' / uid / f'{uid}_model_1_protein.pdb'
+    # Fallback: different model number (not canonical _model_0_)
+    pdb_file = (tmp_path / f'boltz_results_{uid}' / 'predictions'
+                / uid / f'{uid}_model_1_protein.pdb')
     pdb_file.parent.mkdir(parents=True)
     pdb_file.write_text('ATOM  ...')
     result = get_receptor_pdb(str(tmp_path), uid)

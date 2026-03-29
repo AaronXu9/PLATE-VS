@@ -123,18 +123,25 @@ def write_boltz_yaml(reference_smiles, sequence, output_path):
         yaml.dump(doc, f, default_flow_style=False, allow_unicode=True)
 
 
+def get_boltz_results_dir(work_dir, uid):
+    """Return the boltz_results_{uid}/ subdirectory created by boltz predict."""
+    return Path(work_dir) / f'boltz_results_{uid}'
+
+
 def get_receptor_pdb(work_dir, uid):
     """Return path to predicted receptor PDB from boltz predict output.
 
-    Tries canonical path first, then searches for any *_protein.pdb.
+    Boltz predict writes to {work_dir}/boltz_results_{uid}/predictions/{uid}/.
+    Tries canonical path first, then falls back to recursive search.
     """
-    canonical = Path(work_dir) / 'predictions' / uid / f'{uid}_model_0_protein.pdb'
+    canonical = (get_boltz_results_dir(work_dir, uid)
+                 / 'predictions' / uid / f'{uid}_model_0_protein.pdb')
     if canonical.exists():
         return str(canonical)
-    matches = list((Path(work_dir) / 'predictions').rglob('*_protein.pdb'))
+    matches = list(Path(work_dir).rglob('*_protein.pdb'))
     if matches:
-        return str(matches[0])
-    raise FileNotFoundError(f'No receptor PDB in {work_dir}/predictions/')
+        return str(sorted(matches)[0])
+    raise FileNotFoundError(f'No receptor PDB found under {work_dir}')
 
 
 def run_boltz_predict(yaml_path, work_dir, boltzina_env='boltzina_env'):
@@ -149,7 +156,8 @@ def run_boltz_predict(yaml_path, work_dir, boltzina_env='boltzina_env'):
         ['conda', 'run', '-n', boltzina_env,
          'boltz', 'predict', str(yaml_path),
          '--out_dir', str(work_dir),
-         '--accelerator', 'gpu'],
+         '--accelerator', 'gpu',
+         '--model', 'boltz2'],
         check=True,
         capture_output=True,
         text=True,
@@ -179,7 +187,8 @@ def prep_protein(protein, registry_df, results_dir, base_dir, boltzina_env):
     uid = protein['uniprot_id']
     work_dir = Path(results_dir) / 'work_dirs' / uid
 
-    if (work_dir / 'predictions' / uid).exists():
+    boltz_results = get_boltz_results_dir(work_dir, uid)
+    if (boltz_results / 'predictions' / uid).exists():
         print(f'  [skip] {uid}: boltz predict already done')
         return
 
