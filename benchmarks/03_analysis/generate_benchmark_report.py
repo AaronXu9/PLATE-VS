@@ -73,7 +73,7 @@ def parse_row(summary: dict) -> dict:
     }
 
     for split in SPLIT_NAMES:
-        metrics = history.get(f'{split}_metrics', {})
+        metrics = history.get(f'{split}_metrics') or {}
         for metric in REPORT_METRICS:
             val = metrics.get(metric)
             row[f'{split}_{metric}'] = round(val, 4) if val is not None else None
@@ -144,7 +144,8 @@ def print_all_splits(rows: list[dict]) -> None:
 
 def generate_report(results_dir: str, output_csv: str = None,
                     split: str = 'all', verbose: bool = False,
-                    docking_dir: str = None) -> list[dict]:
+                    docking_dir: str = None,
+                    extra_dirs_cli: list = None) -> list[dict]:
     results_path = Path(results_dir)
     if not results_path.exists():
         print(f"Error: results directory not found: {results_dir}", file=sys.stderr)
@@ -157,6 +158,14 @@ def generate_report(results_dir: str, output_csv: str = None,
             extra_dirs.append(docking_path)
         else:
             print(f"Warning: docking dir not found: {docking_dir}", file=sys.stderr)
+
+    if extra_dirs_cli:
+        for p in extra_dirs_cli:
+            ep = Path(p)
+            if ep.exists():
+                extra_dirs.append(ep)
+            else:
+                print(f"Warning: extra dir not found: {p}", file=sys.stderr)
 
     summaries = collect_summaries(results_path, extra_dirs)
     if not summaries:
@@ -237,8 +246,16 @@ def main():
         default=None,
         help='Optional additional directory to scan for docking *_training_summary.json files'
     )
+    parser.add_argument(
+        '--extra-dirs',
+        type=str,
+        nargs='+',
+        default=None,
+        help='Additional directories to scan for *_training_summary.json files'
+    )
     args = parser.parse_args()
-    generate_report(args.results_dir, args.output, args.split, args.verbose, args.docking_dir)
+    generate_report(args.results_dir, args.output, args.split, args.verbose,
+                    args.docking_dir, args.extra_dirs)
 
 
 if __name__ == "__main__":
