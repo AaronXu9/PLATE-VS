@@ -111,7 +111,7 @@ def write_boltz_yaml(reference_smiles, sequence, output_path):
     doc = {
         'version': 1,
         'sequences': [
-            {'protein': {'id': ['A'], 'sequence': sequence}},
+            {'protein': {'id': ['A'], 'sequence': sequence, 'msa': 'empty'}},
             {'ligand': {'id': 'B', 'smiles': reference_smiles}},
         ],
         'properties': [
@@ -128,16 +128,35 @@ def get_boltz_results_dir(work_dir, uid):
     return Path(work_dir) / f'boltz_results_{uid}'
 
 
+def _cif_to_pdb(cif_path, pdb_path):
+    """Extract protein chain A from a boltz CIF and write as PDB."""
+    st = gemmi.read_structure(str(cif_path))
+    # Keep only chain A (protein; chain B is the ligand in boltz output)
+    for model in st:
+        chains_to_remove = [
+            chain.name for chain in model if chain.name != 'A'
+        ]
+        for name in chains_to_remove:
+            model.remove_chain(name)
+    st.write_pdb(str(pdb_path))
+    return str(pdb_path)
+
+
 def get_receptor_pdb(work_dir, uid):
     """Return path to predicted receptor PDB from boltz predict output.
 
-    Boltz predict writes to {work_dir}/boltz_results_{uid}/predictions/{uid}/.
-    Tries canonical path first, then falls back to recursive search.
+    Boltz-2 outputs {uid}_model_0.cif; boltz-1 outputs *_protein.pdb.
+    Converts CIF → PDB (protein chain only) if needed.
     """
-    canonical = (get_boltz_results_dir(work_dir, uid)
-                 / 'predictions' / uid / f'{uid}_model_0_protein.pdb')
-    if canonical.exists():
-        return str(canonical)
+    pred_dir = get_boltz_results_dir(work_dir, uid) / 'predictions' / uid
+    # Boltz-2: CIF output
+    cif_path = pred_dir / f'{uid}_model_0.cif'
+    pdb_path = pred_dir / f'{uid}_model_0_protein.pdb'
+    if cif_path.exists() and not pdb_path.exists():
+        _cif_to_pdb(cif_path, pdb_path)
+    if pdb_path.exists():
+        return str(pdb_path)
+    # Legacy fallback: recursive search for any *_protein.pdb
     matches = list(Path(work_dir).rglob('*_protein.pdb'))
     if matches:
         return str(sorted(matches)[0])

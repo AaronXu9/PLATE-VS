@@ -43,12 +43,14 @@ def test_write_boltz_yaml(tmp_path):
     protein_entry = next(s for s in seqs if 'protein' in s)
     ligand_entry = next(s for s in seqs if 'ligand' in s)
     assert protein_entry['protein']['sequence'] == 'TESTSEQ'
+    assert protein_entry['protein']['msa'] == 'empty'
     assert ligand_entry['ligand']['smiles'] == 'CC(=O)O'
     assert doc['properties'][0]['affinity']['binder'] == 'B'
 
 
 def test_get_receptor_pdb_canonical(tmp_path):
     uid = 'O00408'
+    # Pre-existing PDB (legacy boltz-1 output or already-converted)
     pdb_file = (tmp_path / f'boltz_results_{uid}' / 'predictions'
                 / uid / f'{uid}_model_0_protein.pdb')
     pdb_file.parent.mkdir(parents=True)
