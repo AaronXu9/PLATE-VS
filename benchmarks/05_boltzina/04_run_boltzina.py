@@ -17,6 +17,8 @@ def main():
     p.add_argument('--boltzina-dir', default='external/boltzina',
                    help='Path to cloned boltzina submodule')
     p.add_argument('--boltzina-env', default='boltzina_env')
+    p.add_argument('--ligands-dir', default=None,
+                   help='Override ligands root dir (default: {results-dir}/ligands)')
     args = p.parse_args()
 
     with open(args.poc_proteins) as f:
@@ -36,7 +38,8 @@ def main():
         boltz_results = get_boltz_results_dir(str(work_dir), uid)
         vina_config = work_dir / 'vina_config.txt'
         receptor_pdb = get_receptor_pdb(str(work_dir), uid)
-        ligand_files = collect_ligand_paths(str(results_dir / 'ligands'), uid)
+        ligands_root = args.ligands_dir if args.ligands_dir else str(results_dir / 'ligands')
+        ligand_files = collect_ligand_paths(ligands_root, uid)
 
         print(f'[{i}/{len(proteins)}] {uid}: {len(ligand_files)} ligands...')
         config_path = write_boltzina_config(
