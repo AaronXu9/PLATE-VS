@@ -1,0 +1,11 @@
+name: boltzina_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - -e /home/aoxu/projects/VLS-Benchmark-Dataset-boltzina/external/boltzina
+    - rdkit
+    - gemmi
