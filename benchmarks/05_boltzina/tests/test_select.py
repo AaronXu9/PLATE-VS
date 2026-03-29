@@ -66,9 +66,10 @@ def test_n_decoys_capped():
 
 
 def test_n_decoys_not_capped_when_small():
-    df = _make_registry([('P00001', '1ABC', 50, 0.9, 300)])
-    result = select_proteins(df, n=1)
-    assert result[0]['n_decoys_to_sample'] == 50 * 50  # 2500
+    # 30 actives * 50 ratio = 1500, which is under the 2500 cap
+    df = _make_registry([('P00001', '1ABC', 30, 0.9, 300)])
+    result = select_proteins(df, n=1, min_actives=30)
+    assert result[0]['n_decoys_to_sample'] == 30 * 50  # 1500, not capped
 
 
 def test_output_keys():

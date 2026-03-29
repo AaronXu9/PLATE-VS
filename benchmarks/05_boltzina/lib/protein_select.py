@@ -22,6 +22,8 @@ def select_proteins(df, n=10, min_actives=50, min_pchembl_coverage=0.80):
         (df['is_active'] == True)
     ].copy()
 
+    # pdb_id, cif_path, quality_score are protein-level attributes:
+    # all rows for a given uniprot_id share the same values, so .first() is safe.
     stats = test.groupby('uniprot_id').agg(
         pdb_id=('pdb_id', 'first'),
         cif_path=('cif_path', 'first'),
@@ -29,6 +31,9 @@ def select_proteins(df, n=10, min_actives=50, min_pchembl_coverage=0.80):
         n_actives=('is_active', 'count'),
         pchembl_coverage=('pchembl', lambda x: x.notna().mean()),
     ).reset_index()
+
+    # Drop proteins with missing quality_score (data integrity guard)
+    stats = stats[stats['quality_score'].notna()]
 
     filtered = stats[
         (stats['n_actives'] >= min_actives) &
