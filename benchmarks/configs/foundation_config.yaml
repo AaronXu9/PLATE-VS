@@ -1,0 +1,8 @@
+# Configuration for Foundation Models (Boltz-2, FlashAffinity)
+model_name: "Boltz-2"
+inference:
+  batch_size: 1
+  device: "cuda"
+fine_tuning:
+  enabled: false
+  strategy: "lora"

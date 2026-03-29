@@ -1,0 +1,128 @@
+# Configuration for Classical Models (RF, GBM, ODDT)
+
+# Model type: 'random_forest', 'gradient_boosting', 'svm', etc.
+model_type: "random_forest"
+
+# Hyperparameters for the model
+hyperparameters:
+  # Number of trees in the forest
+  n_estimators: 100
+  
+  # Maximum depth of the trees (null = unlimited)
+  max_depth: null
+  
+  # Minimum samples required to split an internal node
+  min_samples_split: 2
+  
+  # Minimum samples required at a leaf node
+  min_samples_leaf: 1
+  
+  # Number of features to consider when looking for the best split
+  # Options: 'sqrt', 'log2', null (all features), or int/float
+  max_features: 'sqrt'
+  
+  # Whether to use bootstrap samples
+  bootstrap: true
+  
+  # Random state for reproducibility
+  random_state: 42
+  
+  # Number of parallel jobs (-1 = use all cores)
+  n_jobs: -1
+  
+  # Class weights for handling imbalanced data
+  # Options: 'balanced', 'balanced_subsample', null, or dict
+  class_weight: 'balanced'
+
+# Feature generation configuration
+features:
+  # Feature type: 'morgan_fingerprint', 'molecular_descriptors', or 'combined'
+  type: "combined"
+  
+  # Ligand feature configuration (for combined features)
+  ligand:
+    type: "morgan_fingerprint"
+    radius: 2
+    n_bits: 2048
+    use_features: false
+  
+  # Protein feature configuration (for combined features)
+  protein:
+    # Type: 'protein_identifier' or 'protein_sequence'
+    type: "protein_identifier"
+    
+    # For protein_identifier:
+    embedding_dim: 32      # Dimension of protein embeddings
+    use_onehot: false      # Use one-hot encoding instead of embeddings
+    
+    # For protein_sequence (if type='protein_sequence'):
+    # include_composition: true
+    # include_properties: true
+    # include_dipeptides: false
+  
+  # Concatenation method for combining ligand and protein features
+  concatenation_method: 'concat'  # Options: 'concat', 'weighted'
+  
+  # --- Legacy single feature configuration (when type != 'combined') ---
+  # Morgan fingerprint specific parameters
+  radius: 2
+  n_bits: 2048
+  use_features: false  # Use pharmacophoric features
+  
+  # Molecular descriptors (if type='molecular_descriptors')
+  # descriptor_names: ['MolWt', 'MolLogP', 'NumHDonors', 'NumHAcceptors']
+
+# Data configuration
+data:
+  # Similarity threshold for training data
+  # Options: '0p3', '0p5', '0p7', '0p9'
+  similarity_threshold: '0p7'
+
+  # Include decoy compounds in training
+  include_decoys: true
+
+  # Include protein information in features
+  include_protein_features: true
+
+  # Validation split size (if not using precomputed splits)
+  val_split: 0.2
+
+  # Test split size (if not using precomputed splits)
+  test_split: 0.0
+
+  # --- 2D split configuration ---
+  # Use protein cluster × ligand similarity split.
+  # Requires registry_2d_split.csv (run assign_protein_splits.py first).
+  # Train = protein_partition=train × split=train
+  # Val   = protein_partition=val   × split=test  (novel ligands, held-out protein family)
+  # Test  = protein_partition=test  × split=test  (hardest: both axes novel)
+  use_2d_split: false
+
+  # Protein sequence similarity threshold for clustering
+  # Options: qcov_50, qcov_70, qcov_95, qcov_100
+  protein_cluster_threshold: qcov_70
+
+  # Minimum cluster size to be eligible for val/test assignment (smaller → always train)
+  min_cluster_size_for_split: 3
+
+  # Random seed for protein cluster assignment
+  protein_split_seed: 42
+
+  # Target protein fractions for train / val / test partitions
+  protein_split_ratios: [0.70, 0.15, 0.15]
+
+# Cross-validation settings (optional)
+cross_validation: false
+cv_folds: 5
+
+# Evaluation metrics to compute
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+  - avg_precision
+  - mcc
+
+

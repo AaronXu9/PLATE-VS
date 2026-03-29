@@ -1,0 +1,43 @@
+# GraphDTA regression config for DeepPurpose wrapper.
+
+model_type: "graphdta"
+model_architecture: "GraphDTA"
+run_name: "graphdta_gpu"
+
+encodings:
+  drug: "DGL_GCN"
+  target: "CNN"
+
+training:
+  batch_size: 128
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0
+  test_every_n_epochs: 5
+  num_workers: 0
+  cuda_id: 0
+
+model:
+  cls_hidden_dims: [1024, 1024, 512]
+  hidden_dim_drug: 128
+  hidden_dim_protein: 128
+  gnn_hid_dim_drug: 64
+  gnn_num_layers: 3
+  cnn_target_filters: [32, 64, 96]
+  cnn_target_kernels: [4, 8, 12]
+
+data:
+  similarity_threshold: "0p7"
+  use_precomputed_split: true
+  val_split: 0.2
+  random_state: 42
+  only_actives: true
+  require_affinity: true
+  affinity_types: []
+
+target:
+  transform: "pIC50"
+  unit_assumption: "nM"
+
+logging:
+  verbose: true

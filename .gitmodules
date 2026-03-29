@@ -1,0 +1,3 @@
+[submodule "external/plate-vs-website"]
+	path = external/plate-vs-website
+	url = https://github.com/yongchand/plate-vs.git

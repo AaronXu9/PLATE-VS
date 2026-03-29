@@ -1,0 +1,56 @@
+{
+  "model_type": "random_forest",
+  "task": "regression",
+  "feature_type": "combined_morgan_r2_b2048_protein_identifier",
+  "similarity_threshold": "0p7",
+  "training_history": {
+    "train_metrics": {
+      "mse": 0.06473608475967497,
+      "rmse": 0.25443286886657346,
+      "mae": 0.1788615336480213,
+      "r2": 0.9602880124980906,
+      "pearson": 0.9826199449008977,
+      "spearman": 0.982932548791081,
+      "ci": 0.9486816689827823
+    },
+    "training_time": 7.754923105239868,
+    "n_train_samples": 84978,
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": null,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": "sqrt",
+      "bootstrap": true,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "val_metrics": {
+      "mse": 1.628733623854309,
+      "rmse": 1.2762184859397347,
+      "mae": 1.0296428587434523,
+      "r2": -0.33107925513495995,
+      "pearson": 0.23317559289008657,
+      "spearman": 0.22105956728274082,
+      "ci": 0.5749059871600176
+    },
+    "n_val_samples": 13292,
+    "test_metrics": {
+      "mse": 1.98787386002868,
+      "rmse": 1.4099198062402982,
+      "mae": 1.1807025027211997,
+      "r2": -0.4767736816071486,
+      "pearson": 0.29741362967723955,
+      "spearman": 0.2975918518521627,
+      "ci": 0.6007002430480822
+    }
+  },
+  "data_config": {
+    "similarity_threshold": "0p7",
+    "include_decoys": false,
+    "include_protein_features": true,
+    "task": "regression",
+    "use_2d_split": true
+  },
+  "use_2d_split": true
+}

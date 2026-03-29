@@ -1,15 +1,34 @@
 """
 Protein-Ligand Interaction (PLI) Similarity Scorer
 
-This module computes similarity between protein-ligand systems using three metrics:
-1. Tanimoto Similarity (2D): Chemical fingerprint similarity between ligands
-2. SuCOS Protein-Aligned (3D): Overlap when proteins are superimposed via Foldseek
-3. SuCOS Ligand-Aligned (3D): Overlap when ligands are optimally aligned to each other
+This module computes similarity between protein-ligand systems following the methodology
+from Škrinjar et al. 2025: "Have protein-ligand cofolding methods moved beyond memorisation?"
 
-The workflow:
-1. Run Foldseek on protein structures to get alignment matrices (rotation + translation)
-2. Apply the transformation to target ligand coordinates
-3. Compute SuCOS scores for pharmacophore/shape overlap
+Main Similarity Metric:
+    SuCOS-pocket = SuCOS × (pocket_qcov / 100)
+    
+    Where:
+    - SuCOS: Shape/pharmacophore overlap after ligand-to-ligand alignment (using RDKit's rdShapeAlign)
+    - pocket_qcov: Pocket query coverage from Foldseek (% of query pocket residues aligned to target)
+
+Additional Metrics:
+1. Tanimoto ECFP4: 2D fingerprint similarity using Morgan fingerprints (radius=2) - paper standard
+2. Tanimoto RDKit: 2D fingerprint similarity using RDKit topological fingerprints
+3. SuCOS Ligand-Aligned: 3D overlap after optimal ligand shape alignment
+4. SuCOS Protein-Aligned: 3D overlap after protein superposition (legacy, less reliable per paper)
+5. Shape Similarity: Shape Tanimoto after ligand alignment
+6. Pocket qcov: Percentage of aligned pocket residues from Foldseek
+
+The key insight from the paper is that protein-aligned approaches are "too sensitive to the 
+efficacy of rigid protein superposition", so the recommended approach is:
+1. Use Foldseek to identify protein alignments and get pocket_qcov
+2. Align ligands independently using RDKit shape alignment
+3. Compute SuCOS on ligand-aligned poses
+4. Multiply by pocket_qcov to get the final SuCOS-pocket score
+
+Reference:
+    Škrinjar et al. (2025). Have protein-ligand cofolding methods moved beyond memorisation?
+    bioRxiv 2025.03.20.644243. https://doi.org/10.1101/2025.03.20.644243
 """
 
 import os
@@ -80,19 +99,36 @@ class FoldseekAlignment:
     lddt: float  # Local distance difference test score
     rmsd: float = 0.0
     aligned_length: int = 0
+    qcov: float = 0.0  # Query coverage (0-100)
 
 
 @dataclass
 class SimilarityScore:
-    """Container for all similarity scores between two systems."""
+    """Container for all similarity scores between two systems.
+    
+    The main similarity score used is sucos_pocket (SuCOS × pocket_qcov),
+    following the methodology from Škrinjar et al. 2025:
+    "Have protein-ligand cofolding methods moved beyond memorisation?"
+    
+    SuCOS-pocket measures the overlap of ligand poses within the same pocket,
+    where ligands are aligned using RDKit's shape alignment (not protein superposition).
+    """
     query_system: str
     target_system: str
-    tanimoto: float = np.nan
+    # 2D Fingerprint Similarities
+    tanimoto_ecfp4: float = np.nan  # ECFP4 (Morgan radius=2) - paper standard
+    tanimoto_rdkit: float = np.nan  # RDKit topological fingerprint
+    # 3D Ligand-Aligned Scores (using RDKit shape alignment)
+    sucos_ligand_aligned: float = np.nan  # SuCOS after ligand shape alignment
+    shape_similarity: float = np.nan  # Shape Tanimoto after alignment
+    alignment_rmsd: float = np.nan  # RMSD of ligand alignment
+    # Pocket Metrics (from Foldseek)
+    pocket_qcov: float = np.nan  # Pocket query coverage (0-100)
+    foldseek_lddt: float = np.nan  # Local distance difference test score
+    # Combined Score (main metric from paper)
+    sucos_pocket: float = np.nan  # SuCOS × (pocket_qcov / 100)
+    # Legacy: Protein-aligned SuCOS (less reliable per paper)
     sucos_protein_aligned: float = np.nan
-    sucos_ligand_aligned: float = np.nan
-    shape_similarity: float = np.nan
-    alignment_rmsd: float = np.nan
-    foldseek_lddt: float = np.nan
 
 
 # ============================================================================
@@ -208,9 +244,40 @@ def align_molecules(
         return np.nan, np.nan
 
 
-def calculate_tanimoto_similarity(smiles_1: str, smiles_2: str) -> float:
+def calculate_tanimoto_ecfp4(smiles_1: str, smiles_2: str) -> float:
     """
-    Calculate Tanimoto similarity between two molecules using RDKit fingerprints.
+    Calculate Tanimoto similarity using ECFP4 (Morgan) fingerprints.
+    
+    ECFP4 = Morgan fingerprint with radius 2, which is the standard
+    used in the PLI similarity literature.
+    
+    Args:
+        smiles_1: SMILES string of first molecule
+        smiles_2: SMILES string of second molecule
+        
+    Returns:
+        Tanimoto similarity (0-1)
+    """
+    try:
+        mol_1 = Chem.MolFromSmiles(smiles_1)
+        mol_2 = Chem.MolFromSmiles(smiles_2)
+        
+        if mol_1 is None or mol_2 is None:
+            return np.nan
+        
+        # ECFP4 = Morgan fingerprint with radius 2
+        fp_1 = AllChem.GetMorganFingerprintAsBitVect(mol_1, radius=2, nBits=2048)
+        fp_2 = AllChem.GetMorganFingerprintAsBitVect(mol_2, radius=2, nBits=2048)
+        
+        return DataStructs.TanimotoSimilarity(fp_1, fp_2)
+    except Exception as e:
+        LOG.warning(f"Failed to calculate ECFP4 Tanimoto similarity: {e}")
+        return np.nan
+
+
+def calculate_tanimoto_rdkit(smiles_1: str, smiles_2: str) -> float:
+    """
+    Calculate Tanimoto similarity using RDKit topological fingerprints.
     
     Args:
         smiles_1: SMILES string of first molecule
@@ -232,8 +299,13 @@ def calculate_tanimoto_similarity(smiles_1: str, smiles_2: str) -> float:
         
         return DataStructs.TanimotoSimilarity(fp_1, fp_2)
     except Exception as e:
-        LOG.warning(f"Failed to calculate Tanimoto similarity: {e}")
+        LOG.warning(f"Failed to calculate RDKit Tanimoto similarity: {e}")
         return np.nan
+
+
+def calculate_tanimoto_similarity(smiles_1: str, smiles_2: str) -> float:
+    """Deprecated: Use calculate_tanimoto_ecfp4 instead."""
+    return calculate_tanimoto_rdkit(smiles_1, smiles_2)
 
 
 def apply_transformation_to_molecule(
@@ -298,7 +370,7 @@ class FoldseekRunner:
         """
         Save Foldseek alignments to a parquet file in a format compatible with similarity_scoring.py.
         
-        The format includes columns: query_pdb_id, target_pdb_id, query_chain, target_chain, u, t, lddt, rmsd, alnlen
+        The format includes columns: query_pdb_id, target_pdb_id, query_chain, target_chain, u, t, lddt, rmsd, alnlen, qcov
         
         Args:
             alignments: List of FoldseekAlignment objects
@@ -327,6 +399,7 @@ class FoldseekRunner:
                 "lddt": aln.lddt,
                 "rmsd": aln.rmsd,
                 "alnlen": aln.aligned_length,
+                "qcov": aln.qcov,
             })
         
         if records:
@@ -414,6 +487,7 @@ class FoldseekRunner:
             lddt=best["lddt"],
             rmsd=best.get("rmsd", 0.0),
             aligned_length=best.get("alnlen", 0),
+            qcov=best.get("qcov", 0.0),
         )
         
     def run_easy_search(
@@ -443,7 +517,8 @@ class FoldseekRunner:
         tmp_dir = output_dir / "tmp"
         
         # Format string to get rotation (u) and translation (t) vectors
-        format_str = "query,target,u,t,lddt,rmsd,alnlen"
+        # qcov = query coverage, percentage of query residues that are aligned
+        format_str = "query,target,u,t,lddt,rmsd,alnlen,qcov"
         
         cmd = [
             self.foldseek_path,
@@ -512,6 +587,7 @@ class FoldseekRunner:
             lddt = float(parts[4])
             rmsd = float(parts[5])
             alnlen = int(parts[6])
+            qcov = float(parts[7]) if len(parts) > 7 else 0.0  # Query coverage
             
             # Parse rotation matrix (9 values -> 3x3)
             rotation = np.array([float(x) for x in u_str.split(',')]).reshape(3, 3)
@@ -527,6 +603,7 @@ class FoldseekRunner:
                 lddt=lddt,
                 rmsd=rmsd,
                 aligned_length=alnlen,
+                qcov=qcov,
             )
             
         except Exception as e:
@@ -738,8 +815,45 @@ class PLISimilarityScorer:
             LOG.warning(f"Failed to get fingerprint for {system_id}: {e}")
             return None
     
-    def compute_tanimoto(self, system_1: str, system_2: str) -> float:
-        """Compute Tanimoto similarity between two systems' ligands."""
+    def get_ecfp4_fingerprint(self, system_id: str) -> Optional[Any]:
+        """Get ECFP4 (Morgan radius=2) fingerprint for a ligand - paper standard."""
+        cache_key = f"ecfp4_{system_id}"
+        if cache_key in self._fp_cache:
+            return self._fp_cache[cache_key]
+        
+        info = self.get_system_info(system_id)
+        if info is None:
+            return None
+        
+        try:
+            if info.ligand_smiles:
+                mol = Chem.MolFromSmiles(info.ligand_smiles)
+            else:
+                mol = self.load_ligand_mol(system_id)
+            
+            if mol is None:
+                return None
+            
+            # ECFP4 = Morgan fingerprint with radius 2
+            fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048)
+            self._fp_cache[cache_key] = fp
+            return fp
+        except Exception as e:
+            LOG.warning(f"Failed to get ECFP4 fingerprint for {system_id}: {e}")
+            return None
+    
+    def compute_tanimoto_ecfp4(self, system_1: str, system_2: str) -> float:
+        """Compute ECFP4 Tanimoto similarity between two systems' ligands (paper standard)."""
+        fp_1 = self.get_ecfp4_fingerprint(system_1)
+        fp_2 = self.get_ecfp4_fingerprint(system_2)
+        
+        if fp_1 is None or fp_2 is None:
+            return np.nan
+        
+        return DataStructs.TanimotoSimilarity(fp_1, fp_2)
+    
+    def compute_tanimoto_rdkit(self, system_1: str, system_2: str) -> float:
+        """Compute RDKit Tanimoto similarity between two systems' ligands."""
         fp_1 = self.get_fingerprint(system_1)
         fp_2 = self.get_fingerprint(system_2)
         
@@ -747,6 +861,10 @@ class PLISimilarityScorer:
             return np.nan
         
         return DataStructs.TanimotoSimilarity(fp_1, fp_2)
+    
+    def compute_tanimoto(self, system_1: str, system_2: str) -> float:
+        """Deprecated: Use compute_tanimoto_ecfp4 instead."""
+        return self.compute_tanimoto_rdkit(system_1, system_2)
     
     def compute_sucos_protein_aligned(
         self,
@@ -868,6 +986,10 @@ class PLISimilarityScorer:
         """
         Compute all similarity scores between two systems.
         
+        The main metric is sucos_pocket = SuCOS × (pocket_qcov / 100),
+        following Škrinjar et al. 2025 "Have protein-ligand cofolding methods
+        moved beyond memorisation?"
+        
         Args:
             system_1: Query system ID
             system_2: Target system ID
@@ -881,21 +1003,30 @@ class PLISimilarityScorer:
             target_system=system_2,
         )
         
-        # 1. Tanimoto (2D)
-        score.tanimoto = self.compute_tanimoto(system_1, system_2)
+        alignment = None
         
-        # 2. SuCOS Protein-Aligned (3D)
+        # 1. Tanimoto (2D) - Both ECFP4 (paper standard) and RDKit
+        score.tanimoto_ecfp4 = self.compute_tanimoto_ecfp4(system_1, system_2)
+        score.tanimoto_rdkit = self.compute_tanimoto_rdkit(system_1, system_2)
+        
+        # 2. SuCOS Protein-Aligned (3D) - Legacy, less reliable per paper
         if compute_protein_aligned:
             sucos_protein, alignment = self.compute_sucos_protein_aligned(system_1, system_2)
             score.sucos_protein_aligned = sucos_protein
             if alignment is not None:
                 score.foldseek_lddt = alignment.lddt
+                score.pocket_qcov = alignment.qcov  # Pocket query coverage
         
-        # 3. SuCOS Ligand-Aligned (3D)
+        # 3. SuCOS Ligand-Aligned (3D) - Main approach per paper
         sucos_ligand, shape_sim, rmsd = self.compute_sucos_ligand_aligned(system_1, system_2)
         score.sucos_ligand_aligned = sucos_ligand
         score.shape_similarity = shape_sim
         score.alignment_rmsd = rmsd
+        
+        # 4. Combined Score: SuCOS-pocket = SuCOS × (pocket_qcov / 100)
+        # This is the MAIN similarity metric from the paper
+        if not np.isnan(sucos_ligand) and not np.isnan(score.pocket_qcov):
+            score.sucos_pocket = sucos_ligand * (score.pocket_qcov / 100.0)
         
         return score
     
@@ -931,12 +1062,15 @@ class PLISimilarityScorer:
             results.append({
                 "query_system": score.query_system,
                 "target_system": score.target_system,
-                "tanimoto": score.tanimoto,
-                "sucos_protein_aligned": score.sucos_protein_aligned,
+                "tanimoto_ecfp4": score.tanimoto_ecfp4,
+                "tanimoto_rdkit": score.tanimoto_rdkit,
                 "sucos_ligand_aligned": score.sucos_ligand_aligned,
                 "shape_similarity": score.shape_similarity,
                 "alignment_rmsd": score.alignment_rmsd,
+                "pocket_qcov": score.pocket_qcov,
                 "foldseek_lddt": score.foldseek_lddt,
+                "sucos_pocket": score.sucos_pocket,  # Main metric from paper
+                "sucos_protein_aligned": score.sucos_protein_aligned,  # Legacy
             })
         
         return pd.DataFrame(results)
@@ -992,23 +1126,34 @@ def main():
     score = scorer.score_pair(args.query_system, args.target_system)
     
     print(f"\nSimilarity Scores: {args.query_system} vs {args.target_system}")
-    print(f"  Tanimoto (2D):           {score.tanimoto:.4f}")
-    print(f"  SuCOS Protein-Aligned:   {score.sucos_protein_aligned:.4f}")
+    print(f"\n=== Main Metric (from paper) ===")
+    print(f"  SuCOS-pocket:            {score.sucos_pocket:.4f}  (SuCOS × pocket_qcov/100)")
+    print(f"\n=== 2D Fingerprint Similarities ===")
+    print(f"  Tanimoto (ECFP4):        {score.tanimoto_ecfp4:.4f}  (paper standard)")
+    print(f"  Tanimoto (RDKit):        {score.tanimoto_rdkit:.4f}")
+    print(f"\n=== 3D Ligand-Aligned Scores ===")
     print(f"  SuCOS Ligand-Aligned:    {score.sucos_ligand_aligned:.4f}")
     print(f"  Shape Similarity:        {score.shape_similarity:.4f}")
     print(f"  Alignment RMSD:          {score.alignment_rmsd:.4f}")
+    print(f"\n=== Pocket Metrics (Foldseek) ===")
+    print(f"  Pocket qcov:             {score.pocket_qcov:.4f}")
     print(f"  Foldseek LDDT:           {score.foldseek_lddt:.4f}")
+    print(f"\n=== Legacy (protein-aligned) ===")
+    print(f"  SuCOS Protein-Aligned:   {score.sucos_protein_aligned:.4f}")
     
     if args.output:
         df = pd.DataFrame([{
             "query_system": score.query_system,
             "target_system": score.target_system,
-            "tanimoto": score.tanimoto,
-            "sucos_protein_aligned": score.sucos_protein_aligned,
+            "tanimoto_ecfp4": score.tanimoto_ecfp4,
+            "tanimoto_rdkit": score.tanimoto_rdkit,
             "sucos_ligand_aligned": score.sucos_ligand_aligned,
             "shape_similarity": score.shape_similarity,
             "alignment_rmsd": score.alignment_rmsd,
+            "pocket_qcov": score.pocket_qcov,
             "foldseek_lddt": score.foldseek_lddt,
+            "sucos_pocket": score.sucos_pocket,
+            "sucos_protein_aligned": score.sucos_protein_aligned,
         }])
         df.to_parquet(args.output, index=False)
         print(f"\nScores saved to {args.output}")

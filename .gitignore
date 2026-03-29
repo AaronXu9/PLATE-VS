@@ -58,6 +58,30 @@ doe_out/
 *copy.ipynb
 data/chembl_parallel_*/
 data/ligand_matches_inchikey.csv
+data/pdb_chain_uniprot.tsv*
+data/pdb_seqres.txt
+data/multi_mapping_pdb_chains.csv
+data/df_uniprotid_smiactives_mindist.csv
+data/uniprot_clusters_annotated.csv
+data/uniprot_bipartite_cluster_labels_filtered.csv
+test_downloads/
+data/decoy_index/decoy_fingerprints.npy
+data/decoy_index/decoy_properties.parquet
+notebooks/compare_decoys_publication.ipynb
+plate-vs/
+
+benchmarks/01_preprocessing/structure_selection_results/
+
+# Large benchmark artifacts
+benchmarks/02_training/trained_models/
+benchmarks/02_training/trained_models_2d/
+benchmarks/04_docking/results/
+
+# Large training data
+training_data_full/
+
+# Large binary model/data files
+*.h5
 
 # DeepCoy generated outputs
 external/DeepCoy/*_generated_smiles_zinc
@@ -119,3 +143,10 @@ htmlcov/
 dmypy.json
 external/DeepCoy/models/
 external/DeepCoy/models/
+
+# output figs
+figs/
+# Regression model binaries (large)
+trained_models/**/*.pkl
+trained_models/**/*.log
+trained_models/**/*_protein_mapping.json

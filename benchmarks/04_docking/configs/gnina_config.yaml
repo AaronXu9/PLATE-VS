@@ -1,0 +1,24 @@
+gnina:
+  binary: "/home/aoxu/projects/PoseBench/forks/GNINA/gnina"
+  num_modes: 10          # docking poses per compound (--num_modes)
+  exhaustiveness: 3      # search effort (--exhaustiveness)
+  cnn_scoring: "rescore" # CNN rescoring of Vina poses
+  autobox_add: 4.0       # extra buffer (Å) around reference ligand for box definition
+  cpu: 4                 # CPU threads per GNINA process (Vina search; CNN runs on GPU)
+  device: 0              # GPU device index (GNINA uses GPU by default; set -1 to disable)
+
+data:
+  registry: "training_data_full/registry_2d_split.csv"
+  protein_references: "training_data_full/protein_references.json"
+  similarity_threshold: "0p7"
+  n_targets: 15          # number of representative targets to dock
+  min_actives_per_target: 5  # skip targets with fewer test actives
+
+paths:
+  output_dir: "benchmarks/04_docking/results"
+  receptor_dir: "benchmarks/04_docking/results/receptors"
+  ligand_dir: "benchmarks/04_docking/results/ligands"
+  docking_dir: "benchmarks/04_docking/results/docking"
+
+parallelism:
+  n_workers: 1           # 1 target at a time — GPU is the bottleneck; parallel jobs contend for it
