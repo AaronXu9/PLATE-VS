@@ -21,17 +21,20 @@ def smiles_to_pdb(smiles, output_path, ligand_name='UNL'):
     Returns:
         True on success, False if SMILES is invalid or conformer generation fails.
     """
-    mol = Chem.MolFromSmiles(smiles)
-    if mol is None:
-        return False
+    try:
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return False
 
-    mol = Chem.AddHs(mol)
-    params = AllChem.ETKDGv3()
-    params.randomSeed = 42
-    if AllChem.EmbedMolecule(mol, params) != 0:
+        mol = Chem.AddHs(mol)
+        params = AllChem.ETKDGv3()
+        params.randomSeed = 42
+        if AllChem.EmbedMolecule(mol, params) != 0:
+            return False
+        AllChem.MMFFOptimizeMolecule(mol)
+        mol = Chem.RemoveHs(mol)
+    except Exception:
         return False
-    AllChem.MMFFOptimizeMolecule(mol)
-    mol = Chem.RemoveHs(mol)
 
     # Assign unique atom names: C1, C2, N1, N2, ...
     element_counters = {}
