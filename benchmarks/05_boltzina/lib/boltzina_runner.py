@@ -37,26 +37,29 @@ def write_boltzina_config(uid, work_dir, vina_config, receptor_pdb,
 
 
 def run_boltzina(config_path, boltzina_submodule_path, boltzina_env='boltzina_env',
-                 num_workers=16, vina_cpu=2):
+                 num_workers=16, vina_cpu=2, skip_docking=False, batch_size=4):
     """Run boltzina via conda run.
 
     Args:
         config_path: path to boltzina config.json
         boltzina_submodule_path: path to external/boltzina/ (where run.py lives)
         boltzina_env: conda environment name
-        num_workers: parallel Vina docking workers (pool_size = num_workers / vina_cpu)
-        vina_cpu: CPUs per Vina docking process
+        num_workers: parallel workers (docking pool + structure prep + DataLoader)
+        vina_cpu: CPUs per Vina docking process (ignored when skip_docking=True)
+        skip_docking: skip Vina docking phase (use when Uni-Dock already docked)
+        batch_size: Boltz-2 scoring batch size (higher = faster, more VRAM)
     """
     run_py = Path(boltzina_submodule_path) / 'run.py'
-    result = subprocess.run(
-        ['conda', 'run', '-n', boltzina_env,
-         'python', str(run_py), str(config_path),
-         '--num_workers', str(num_workers),
-         '--vina_cpu', str(vina_cpu)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    cmd = [
+        'conda', 'run', '-n', boltzina_env,
+        'python', str(run_py), str(config_path),
+        '--num_workers', str(num_workers),
+        '--vina_cpu', str(vina_cpu),
+        '--batch_size', str(batch_size),
+    ]
+    if skip_docking:
+        cmd.append('--skip_docking')
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
     return result
 
 

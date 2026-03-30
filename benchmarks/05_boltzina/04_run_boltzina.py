@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / 'lib'))
 from boltz_prep import get_receptor_pdb, get_boltz_results_dir, get_cif_path, prep_receptor_pdbqt
 from boltzina_runner import collect_ligand_paths, write_boltzina_config, run_boltzina
+from unidock_docking import run_unidock_pipeline
 
 
 def main():
@@ -21,6 +22,18 @@ def main():
                    help='Override ligands root dir (default: {results-dir}/ligands)')
     p.add_argument('--base-dir', default=None,
                    help='Repo root for resolving experimental CIF paths')
+    p.add_argument('--use-unidock', action='store_true', default=True,
+                   help='Use GPU Uni-Dock instead of CPU Vina (default)')
+    p.add_argument('--no-unidock', dest='use_unidock', action='store_false',
+                   help='Use CPU Vina docking (slower)')
+    p.add_argument('--unidock-env', default='unidock2',
+                   help='Conda env with Uni-Dock')
+    p.add_argument('--unidock-batch-size', type=int, default=200,
+                   help='Ligands per Uni-Dock GPU batch')
+    p.add_argument('--batch-size', type=int, default=4,
+                   help='Boltz-2 scoring batch size')
+    p.add_argument('--num-workers', type=int, default=16,
+                   help='Parallel workers for docking/prep')
     args = p.parse_args()
 
     with open(args.poc_proteins) as f:
@@ -55,6 +68,22 @@ def main():
         ligand_files = collect_ligand_paths(ligands_root, uid)
 
         print(f'[{i}/{len(proteins)}] {uid}: {len(ligand_files)} ligands...')
+
+        # Phase 1: Docking (Uni-Dock GPU or Vina CPU)
+        if args.use_unidock:
+            run_unidock_pipeline(
+                receptor_pdbqt=str(raw_dir / 'receptor.pdbqt'),
+                receptor_pdb=receptor_pdb,
+                ligand_files=ligand_files,
+                vina_config=str(vina_config),
+                output_dir=str(raw_dir),
+                unidock_env=args.unidock_env,
+                boltzina_env=args.boltzina_env,
+                batch_size=args.unidock_batch_size,
+                num_workers=args.num_workers,
+            )
+
+        # Phase 2+3: Structure prep + Boltz-2 scoring
         config_path = write_boltzina_config(
             uid=uid,
             work_dir=str(boltz_results),
@@ -63,7 +92,12 @@ def main():
             ligand_files=ligand_files,
             output_dir=str(raw_dir),
         )
-        run_boltzina(config_path, args.boltzina_dir, args.boltzina_env)
+        run_boltzina(
+            config_path, args.boltzina_dir, args.boltzina_env,
+            num_workers=args.num_workers, vina_cpu=2,
+            skip_docking=args.use_unidock,
+            batch_size=args.batch_size,
+        )
         print(f'  ✓ {uid}: boltzina complete')
 
     print('Stage 04 complete.')
