@@ -36,18 +36,23 @@ def write_boltzina_config(uid, work_dir, vina_config, receptor_pdb,
     return str(config_path)
 
 
-def run_boltzina(config_path, boltzina_submodule_path, boltzina_env='boltzina_env'):
+def run_boltzina(config_path, boltzina_submodule_path, boltzina_env='boltzina_env',
+                 num_workers=16, vina_cpu=2):
     """Run boltzina via conda run.
 
     Args:
         config_path: path to boltzina config.json
         boltzina_submodule_path: path to external/boltzina/ (where run.py lives)
         boltzina_env: conda environment name
+        num_workers: parallel Vina docking workers (pool_size = num_workers / vina_cpu)
+        vina_cpu: CPUs per Vina docking process
     """
     run_py = Path(boltzina_submodule_path) / 'run.py'
     result = subprocess.run(
         ['conda', 'run', '-n', boltzina_env,
-         'python', str(run_py), str(config_path)],
+         'python', str(run_py), str(config_path),
+         '--num_workers', str(num_workers),
+         '--vina_cpu', str(vina_cpu)],
         check=True,
         capture_output=True,
         text=True,
