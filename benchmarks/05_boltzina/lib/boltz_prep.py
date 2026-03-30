@@ -142,6 +142,92 @@ def _cif_to_pdb(cif_path, pdb_path):
     return str(pdb_path)
 
 
+def _exp_cif_to_pdb(cif_path, pdb_path, chain_a_only=False):
+    """Extract polymer chains from experimental CIF, keep only standard amino acids.
+
+    Strips non-standard residues (modified AAs, ligands classified as polymer,
+    crystallographic additives) that cause Meeko/RDKit crashes during PDBQT prep.
+    If chain_a_only=True, discards all chains except the first (usually chain A).
+    """
+    st = gemmi.read_structure(str(cif_path))
+    st.remove_waters()
+    st.remove_hydrogens()
+    for model in st:
+        # Optionally keep only the first chain (chain A)
+        if chain_a_only and len(model) > 0:
+            first_chain = list(model)[0].name
+            chains_to_drop = [ch.name for ch in model if ch.name != first_chain]
+            for name in chains_to_drop:
+                try:
+                    model.remove_chain(name)
+                except Exception:
+                    pass
+        # Remove chains that contain no standard amino acids
+        chains_to_remove = []
+        for chain in model:
+            has_std_aa = any(r.name in THREE_TO_ONE for r in chain)
+            if not has_std_aa:
+                chains_to_remove.append(chain.name)
+        for name in chains_to_remove:
+            try:
+                model.remove_chain(name)
+            except Exception:
+                pass
+        # Strip non-standard residues within remaining chains (iterate reversed to
+        # preserve indices)
+        for chain in model:
+            idxs = [i for i, r in enumerate(chain) if r.name not in THREE_TO_ONE]
+            for i in reversed(idxs):
+                del chain[i]
+    Path(pdb_path).parent.mkdir(parents=True, exist_ok=True)
+    st.write_pdb(str(pdb_path))
+    return str(pdb_path)
+
+
+def prep_receptor_pdbqt(exp_cif_path, output_pdbqt, boltzina_env='boltzina_env'):
+    """Pre-generate receptor.pdbqt from experimental CIF for a protein.
+
+    Uses the experimental crystal structure (more reliable than boltz-2 predicted
+    structures which can have clashing atoms that Meeko rejects).
+
+    Skips if output_pdbqt already exists.
+    Returns path to receptor.pdbqt.
+    """
+    pdbqt = Path(output_pdbqt)
+    if pdbqt.exists():
+        return str(pdbqt)
+    pdbqt.parent.mkdir(parents=True, exist_ok=True)
+
+    def _run_mk_prepare(tmp_pdb):
+        return subprocess.run(
+            ['conda', 'run', '-n', boltzina_env,
+             'mk_prepare_receptor.py', '-i', str(tmp_pdb),
+             '-o', str(pdbqt.parent / pdbqt.stem), '-p',
+             '--default_altloc', 'A', '-a'],
+            capture_output=True, text=True,
+        )
+
+    # Convert experimental CIF to PDB (temp file); try all chains, then chain A only
+    tmp_pdb = pdbqt.parent / '_exp_receptor_tmp.pdb'
+    _exp_cif_to_pdb(exp_cif_path, str(tmp_pdb))
+    result = _run_mk_prepare(tmp_pdb)
+
+    if result.returncode != 0 or not pdbqt.exists():
+        # Fallback: retry with only the first chain (avoids inter-chain bond issues)
+        _exp_cif_to_pdb(exp_cif_path, str(tmp_pdb), chain_a_only=True)
+        result = _run_mk_prepare(tmp_pdb)
+
+    try:
+        tmp_pdb.unlink()
+    except Exception:
+        pass
+    if result.returncode != 0 or not pdbqt.exists():
+        raise RuntimeError(
+            f'mk_prepare_receptor.py failed for {exp_cif_path}:\n{result.stderr}'
+        )
+    return str(pdbqt)
+
+
 def get_receptor_pdb(work_dir, uid):
     """Return path to predicted receptor PDB from boltz predict output.
 
