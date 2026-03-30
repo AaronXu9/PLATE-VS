@@ -2,7 +2,9 @@ name: boltzina_env
 channels:
   - defaults
   - conda-forge
+  - bioconda
 dependencies:
+  - bioconda::maxit
   - python=3.10
   - pip
   - pip:

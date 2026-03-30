@@ -39,9 +39,9 @@ def main():
 
     for protein in proteins:
         uid = protein['uniprot_id']
-        csv_path = results_dir / 'raw_results' / uid / 'results.csv'
+        csv_path = results_dir / 'raw_results' / uid / 'boltzina_results.csv'
         if not csv_path.exists():
-            print(f'  [missing] {uid}: no results.csv, skipping')
+            print(f'  [missing] {uid}: no boltzina_results.csv, skipping')
             continue
 
         df = parse_boltzina_csv(str(csv_path), affinity_col=args.affinity_col)

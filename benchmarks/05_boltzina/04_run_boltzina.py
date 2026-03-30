@@ -30,7 +30,7 @@ def main():
         uid = protein['uniprot_id']
         raw_dir = results_dir / 'raw_results' / uid
 
-        if (raw_dir / 'results.csv').exists():
+        if (raw_dir / 'boltzina_results.csv').exists():
             print(f'[{i}/{len(proteins)}] {uid}: skip (results.csv exists)')
             continue
 
