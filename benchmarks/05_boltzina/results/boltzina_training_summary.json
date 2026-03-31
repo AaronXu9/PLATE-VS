@@ -1,0 +1,19 @@
+{
+  "model_type": "boltzina",
+  "feature_type": "3d_docking_boltz2",
+  "similarity_threshold": "0p7",
+  "use_precomputed_split": true,
+  "training_history": {
+    "train_metrics": {},
+    "val_metrics": {},
+    "test_metrics": {
+      "roc_auc": 0.4652,
+      "ef1pct": 0.1172,
+      "spearman_r": null
+    },
+    "n_train_samples": 0,
+    "n_val_samples": 0,
+    "n_test_samples": 16736,
+    "training_time": 1.4
+  }
+}
