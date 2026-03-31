@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / 'lib'))
-from boltz_prep import get_receptor_pdb, get_boltz_results_dir, get_cif_path, prep_receptor_pdbqt
+from boltz_prep import get_boltz_results_dir, get_cif_path, prep_receptor_pdbqt, _exp_cif_to_pdb
 from boltzina_runner import collect_ligand_paths, write_boltzina_config, run_boltzina
 from unidock_docking import run_unidock_pipeline
 
@@ -63,7 +63,13 @@ def main():
 
         boltz_results = get_boltz_results_dir(str(work_dir), uid)
         vina_config = work_dir / 'vina_config.txt'
-        receptor_pdb = get_receptor_pdb(str(work_dir), uid)
+
+        # Generate receptor PDB from experimental CIF (for pdb_merge in post-processing)
+        receptor_pdb_path = raw_dir / 'receptor.pdb'
+        if not receptor_pdb_path.exists() and args.base_dir and protein.get('pdb_id'):
+            exp_cif = get_cif_path(uid, protein['pdb_id'], args.base_dir)
+            _exp_cif_to_pdb(exp_cif, str(receptor_pdb_path))
+        receptor_pdb = str(receptor_pdb_path)
         ligands_root = args.ligands_dir if args.ligands_dir else str(results_dir / 'ligands')
         ligand_files = collect_ligand_paths(ligands_root, uid)
 

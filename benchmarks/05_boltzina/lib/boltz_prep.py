@@ -249,8 +249,72 @@ def get_receptor_pdb(work_dir, uid):
     raise FileNotFoundError(f'No receptor PDB found under {work_dir}')
 
 
+def generate_boltz_artifacts(yaml_path, output_dir, boltzina_env='boltzina_env'):
+    """Generate manifest.json, constraints/, mols/ from boltz YAML without prediction.
+
+    Uses boltz's own process_input() to parse the YAML and extract metadata,
+    ligand constraints, and molecule objects — skipping the expensive neural
+    network forward pass that boltz predict would run.
+
+    Args:
+        yaml_path: path to the boltz input YAML
+        output_dir: base directory for processed/ artifacts
+        boltzina_env: conda environment name (needs boltz installed)
+    """
+    output_dir = Path(output_dir)
+    processed_dir = output_dir / 'processed'
+
+    script = f'''
+import json, pickle
+from pathlib import Path
+from boltz.main import process_input
+
+yaml_path = Path("{yaml_path}")
+out = Path("{processed_dir}")
+for d in ["msa", "constraints", "templates", "mols", "structures", "records"]:
+    (out / d).mkdir(parents=True, exist_ok=True)
+
+ccd_path = Path.home() / ".boltz" / "ccd.pkl"
+ccd = {{}}
+if ccd_path.exists():
+    with open(ccd_path, "rb") as f:
+        ccd = pickle.load(f)
+
+process_input(
+    path=yaml_path, ccd=ccd, msa_dir=out / "msa", mol_dir=out / "mols",
+    boltz2=True, use_msa_server=False, msa_server_url="",
+    msa_pairing_strategy="greedy", msa_server_username=None,
+    msa_server_password=None, api_key_header=None, api_key_value=None,
+    max_msa_seqs=4096, processed_msa_dir=out / "msa",
+    processed_constraints_dir=out / "constraints",
+    processed_templates_dir=out / "templates",
+    processed_mols_dir=out / "mols",
+    structure_dir=out / "structures", records_dir=out / "records",
+)
+
+# Build manifest.json from records
+records = []
+for f in sorted((out / "records").glob("*.json")):
+    records.append(json.load(open(f)))
+with open(out / "manifest.json", "w") as f:
+    json.dump({{"records": records}}, f, indent=4)
+'''
+    result = subprocess.run(
+        ['conda', 'run', '-n', boltzina_env, 'python3', '-c', script],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f'generate_boltz_artifacts failed:\n{result.stderr[-1000:]}'
+        )
+    manifest = processed_dir / 'manifest.json'
+    if not manifest.exists():
+        raise RuntimeError(f'manifest.json not generated at {manifest}')
+    return str(processed_dir)
+
+
 def run_boltz_predict(yaml_path, work_dir, boltzina_env='boltzina_env'):
-    """Run boltz predict via conda run.
+    """Run boltz predict via conda run (legacy, prefer generate_boltz_artifacts).
 
     Args:
         yaml_path: path to the boltz input YAML (filename stem = uid)
@@ -287,14 +351,18 @@ def get_reference_smiles(registry_df, uniprot_id):
 def prep_protein(protein, registry_df, results_dir, base_dir, boltzina_env):
     """Run the full Stage 02 pipeline for one protein.
 
-    Skips if predictions/ subdirectory already exists (resumable).
+    Generates boltz artifacts (manifest, constraints, mols) directly from the
+    input YAML without running the full boltz predict neural network. The
+    experimental crystal structure is used for docking, not a predicted one.
+
+    Skips if processed/manifest.json already exists (resumable).
     """
     uid = protein['uniprot_id']
     work_dir = Path(results_dir) / 'work_dirs' / uid
 
     boltz_results = get_boltz_results_dir(work_dir, uid)
-    if (boltz_results / 'predictions' / uid).exists():
-        print(f'  [skip] {uid}: boltz predict already done')
+    if (boltz_results / 'processed' / 'manifest.json').exists():
+        print(f'  [skip] {uid}: artifacts already generated')
         return
 
     cif_path = get_cif_path(uid, protein['pdb_id'], base_dir)
@@ -302,7 +370,7 @@ def prep_protein(protein, registry_df, results_dir, base_dir, boltzina_env):
     reference_smiles = get_reference_smiles(registry_df, uid)
     centroid = extract_ligand_centroid(cif_path)
 
-    # Write boltz YAML — filename stem becomes the prediction subdirectory name
+    # Write boltz YAML — filename stem determines artifact naming
     yaml_path = work_dir / f'{uid}.yaml'
     write_boltz_yaml(reference_smiles, sequence, str(yaml_path))
 
@@ -310,6 +378,6 @@ def prep_protein(protein, registry_df, results_dir, base_dir, boltzina_env):
     vina_config_path = work_dir / 'vina_config.txt'
     write_vina_config(centroid, [22.0, 22.0, 22.0], str(vina_config_path))
 
-    print(f'  Running boltz predict for {uid} (sequence length={len(sequence)})...')
-    run_boltz_predict(yaml_path, work_dir, boltzina_env)
-    print(f'  ✓ {uid}: boltz predict complete')
+    print(f'  Generating boltz artifacts for {uid} (sequence length={len(sequence)})...')
+    generate_boltz_artifacts(yaml_path, str(boltz_results), boltzina_env)
+    print(f'  ✓ {uid}: artifacts generated')
