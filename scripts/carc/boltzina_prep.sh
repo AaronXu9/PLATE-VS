@@ -17,15 +17,15 @@ RESULTS=benchmarks/05_boltzina/results
 POC=$RESULTS/poc_proteins.json
 BASE_DIR=$(pwd)
 
-# Stage 01: Select proteins
+# Stage 01: Select proteins (run manually before submitting this job)
 if [ ! -f "$POC" ]; then
-    echo "=== Stage 01: Selecting proteins ==="
-    conda run -n rdkit_env python benchmarks/05_boltzina/01_select_proteins.py \
-        --registry $REGISTRY --base-dir $BASE_DIR \
-        --output $POC --top-n 10
+    echo "ERROR: $POC not found. Run stage 01 manually first:"
+    echo "  OPENBLAS_NUM_THREADS=1 conda run -n rdkit_env python benchmarks/05_boltzina/01_select_proteins.py \\"
+    echo "    --registry $REGISTRY --base-dir \$(pwd) --output $POC --n 10"
+    exit 1
 fi
 
-# Stage 02: Generate boltz artifacts (CPU only)
+# Stage 02: Generate boltz artifacts (CPU only, uses experimental CIF structures)
 echo "=== Stage 02: Boltz artifact prep ==="
 conda run -n boltzina_env python benchmarks/05_boltzina/02_prep_boltz.py \
     --poc-proteins $POC --registry $REGISTRY \
