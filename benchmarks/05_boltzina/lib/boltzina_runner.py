@@ -59,7 +59,11 @@ def run_boltzina(config_path, boltzina_submodule_path, boltzina_env='boltzina_en
     ]
     if skip_docking:
         cmd.append('--skip_docking')
-    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f'  [boltzina stderr] {result.stderr[-2000:]}')
+        print(f'  [boltzina stdout] {result.stdout[-1000:]}')
+        result.check_returncode()
     return result
 
 
