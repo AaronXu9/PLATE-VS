@@ -21,7 +21,7 @@ RESULTS=benchmarks/05_boltzina/results
 POC=$RESULTS/poc_proteins.json
 
 # Extract protein for this task
-UID=$(python3 -c "
+PROT_UID=$(python3 -c "
 import json, sys
 proteins = json.load(open('$POC'))
 idx = $SLURM_ARRAY_TASK_ID
@@ -30,26 +30,26 @@ if idx >= len(proteins):
 print(proteins[idx]['uniprot_id'])
 ")
 
-if [ -z "$UID" ]; then
+if [ -z "$PROT_UID" ]; then
     echo "Task $SLURM_ARRAY_TASK_ID: no protein assigned"
     exit 0
 fi
 
-RAW_DIR=$RESULTS/raw_results/$UID
+RAW_DIR=$RESULTS/raw_results/$PROT_UID
 
 # Skip if results already exist
 if [ -f "$RAW_DIR/boltzina_results.csv" ]; then
-    echo "Task $SLURM_ARRAY_TASK_ID: $UID already has results, skipping"
+    echo "Task $SLURM_ARRAY_TASK_ID: $PROT_UID already has results, skipping"
     exit 0
 fi
 
 # Skip if no docked output exists
 if [ ! -d "$RAW_DIR/out" ]; then
-    echo "Task $SLURM_ARRAY_TASK_ID: $UID has no docking output, skipping"
+    echo "Task $SLURM_ARRAY_TASK_ID: $PROT_UID has no docking output, skipping"
     exit 0
 fi
 
-echo "Task $SLURM_ARRAY_TASK_ID: Re-scoring $UID"
+echo "Task $SLURM_ARRAY_TASK_ID: Re-scoring $PROT_UID"
 
 CONFIG=$RAW_DIR/config.json
 
@@ -66,4 +66,4 @@ conda run -n boltzina_env python external/boltzina/run.py \
     --batch_size 4 \
     --skip_docking
 
-echo "=== Re-scoring complete for $UID (task $SLURM_ARRAY_TASK_ID) ==="
+echo "=== Re-scoring complete for $PROT_UID (task $SLURM_ARRAY_TASK_ID) ==="
