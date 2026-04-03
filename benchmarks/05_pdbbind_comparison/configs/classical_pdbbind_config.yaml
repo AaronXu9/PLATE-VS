@@ -1,0 +1,41 @@
+# Classical ML regression on PDBbind CleanSplit
+
+models:
+  - type: "random_forest"
+    hyperparameters:
+      n_estimators: 500
+      max_depth: null
+      min_samples_split: 2
+      min_samples_leaf: 1
+      max_features: "sqrt"
+      random_state: 42
+      n_jobs: -1
+
+  - type: "gradient_boosting"
+    hyperparameters:
+      n_estimators: 500
+      max_depth: 6
+      learning_rate: 0.1
+      subsample: 0.8
+      random_state: 42
+
+  - type: "svm"
+    hyperparameters:
+      kernel: "rbf"
+      C: 1.0
+      gamma: "scale"
+
+features:
+  type: "morgan_fingerprint"
+  radius: 2
+  n_bits: 2048
+
+data:
+  smiles_path: "../../../data/pdbbind_cleansplit/smiles/pdbbind_smiles.csv"
+  labels_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_dict.json"
+  split_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_split_cleansplit.json"
+  cv_fold_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_cleansplit_train_val_split_f0.json"
+  test_set: "casf2016"  # or "casf2013"
+
+output:
+  results_dir: "./results/classical"

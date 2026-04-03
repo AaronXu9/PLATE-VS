@@ -1,3 +1,6 @@
 [submodule "external/plate-vs-website"]
 	path = external/plate-vs-website
 	url = https://github.com/yongchand/plate-vs.git
+[submodule "external/GEMS"]
+	path = external/GEMS
+	url = https://github.com/camlab-ethz/GEMS.git

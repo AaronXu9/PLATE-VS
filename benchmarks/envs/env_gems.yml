@@ -1,0 +1,22 @@
+name: gems
+channels:
+  - pytorch
+  - pyg
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch>=2.1
+  - pytorch-cuda=11.8
+  - pyg
+  - scipy
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - pyyaml
+  - pip
+  - pip:
+    - fair-esm
+    - ankh
+    - transformers

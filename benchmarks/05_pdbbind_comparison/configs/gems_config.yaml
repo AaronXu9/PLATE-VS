@@ -1,0 +1,25 @@
+# GEMS inference configuration for PDBbind CleanSplit benchmark
+
+model:
+  # Path to cloned GEMS repo (contains model/ directory with state dicts)
+  repo_path: "../../../external/GEMS"
+  # Number of folds in the ensemble
+  n_folds: 5
+
+data:
+  dataset: "pdbbind_cleansplit"
+  # Directory containing preprocessed .pt dataset files
+  preprocessed_dir: "../../../data/pdbbind_cleansplit/preprocessed"
+  # Labels and splits
+  labels_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_dict.json"
+  split_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_split_cleansplit.json"
+  # Which test set to evaluate on
+  test_set: "casf2016"  # or "casf2013"
+
+inference:
+  batch_size: 128
+  num_workers: 4
+  device: "auto"  # "auto", "cpu", or "cuda:0"
+
+output:
+  results_dir: "./results/gems"

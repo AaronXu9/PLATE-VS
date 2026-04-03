@@ -76,6 +76,11 @@ benchmarks/01_preprocessing/structure_selection_results/
 benchmarks/02_training/trained_models/
 benchmarks/02_training/trained_models_2d/
 benchmarks/04_docking/results/
+benchmarks/05_pdbbind_comparison/results/
+
+# PDBbind CleanSplit data (large)
+data/pdbbind_cleansplit/raw/
+data/pdbbind_cleansplit/preprocessed/
 
 # Large training data
 training_data_full/

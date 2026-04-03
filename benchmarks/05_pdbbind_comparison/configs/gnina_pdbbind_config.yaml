@@ -1,0 +1,25 @@
+# GNINA redocking configuration for PDBbind CleanSplit benchmark
+
+gnina:
+  binary: "/home/aoxu/projects/PoseBench/forks/GNINA/gnina"
+  num_modes: 10
+  exhaustiveness: 8
+  cnn_scoring: "rescore"
+  autobox_add: 4.0
+  cpu: 4
+  device: 0
+
+data:
+  dataset: "pdbbind_cleansplit"
+  raw_dir: "../../../data/pdbbind_cleansplit/raw"
+  labels_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_dict.json"
+  split_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_split_cleansplit.json"
+  test_set: "casf2016"  # or "casf2013"
+
+paths:
+  output_dir: "./results/gnina"
+  receptor_dir: "./results/gnina/receptors"
+  docking_dir: "./results/gnina/docking"
+
+parallelism:
+  n_workers: 1

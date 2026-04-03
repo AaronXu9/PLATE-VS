@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from scipy import stats
 
 try:
     from lifelines.utils import concordance_index as _lifelines_concordance_index
@@ -84,11 +85,41 @@ def calculate_ci(y_true, y_pred):
     return float(concordant / comparable)
 
 
+def calculate_r2(y_true, y_pred):
+    true_arr, pred_arr = _prepare_arrays(y_true, y_pred)
+    if len(true_arr) < 2:
+        return float("nan")
+    ss_res = np.sum((true_arr - pred_arr) ** 2)
+    ss_tot = np.sum((true_arr - np.mean(true_arr)) ** 2)
+    if ss_tot == 0:
+        return float("nan")
+    return float(1.0 - ss_res / ss_tot)
+
+
+def calculate_spearman(y_true, y_pred):
+    true_arr, pred_arr = _prepare_arrays(y_true, y_pred)
+    if len(true_arr) < 2:
+        return float("nan")
+    corr, _ = stats.spearmanr(true_arr, pred_arr)
+    return float(corr)
+
+
+def calculate_kendall(y_true, y_pred):
+    true_arr, pred_arr = _prepare_arrays(y_true, y_pred)
+    if len(true_arr) < 2:
+        return float("nan")
+    corr, _ = stats.kendalltau(true_arr, pred_arr)
+    return float(corr)
+
+
 def summarize_regression(y_true, y_pred):
     return {
         "mse": calculate_mse(y_true, y_pred),
         "rmse": calculate_rmse(y_true, y_pred),
         "mae": calculate_mae(y_true, y_pred),
+        "r2": calculate_r2(y_true, y_pred),
         "pearson": calculate_pearson(y_true, y_pred),
+        "spearman": calculate_spearman(y_true, y_pred),
+        "kendall": calculate_kendall(y_true, y_pred),
         "ci": calculate_ci(y_true, y_pred),
     }

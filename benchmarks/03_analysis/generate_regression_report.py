@@ -25,7 +25,7 @@ except ImportError:
     PANDAS_AVAILABLE = False
 
 
-REPORT_METRICS = ["rmse", "mae", "pearson", "ci", "mse"]
+REPORT_METRICS = ["rmse", "mae", "r2", "pearson", "spearman", "kendall", "ci", "mse"]
 SPLIT_NAMES = ["train", "val", "test"]
 
 
