@@ -1,0 +1,25 @@
+name: binding_affinity
+channels:
+  - pytorch
+  - pyg
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch>=2.1
+  - pytorch-cuda=11.8
+  - pyg
+  - scipy
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - pyyaml
+  - biopython
+  - pip
+  - pip:
+    - torchmd-net
+    - rdkit
+    - wandb
+    - python-dotenv
+    - fair-esm

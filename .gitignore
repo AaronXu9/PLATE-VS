@@ -77,6 +77,8 @@ benchmarks/02_training/trained_models/
 benchmarks/02_training/trained_models_2d/
 benchmarks/04_docking/results/
 benchmarks/05_pdbbind_comparison/results/
+benchmarks/06_binding_affinity_model/results/
+benchmarks/06_binding_affinity_model/checkpoints/
 
 # PDBbind CleanSplit data (large)
 data/pdbbind_cleansplit/raw/
