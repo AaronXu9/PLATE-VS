@@ -89,7 +89,9 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
     total_loss = 0.0
     total_huber = 0.0
     total_rank = 0.0
+    total_grad_norm = 0.0
     n_samples = 0
+    n_steps = 0
 
     for batch in loader:
         batch = batch.to(device)
@@ -99,7 +101,7 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
         loss, loss_dict = criterion(pred, batch.y.view(-1, 1))
 
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+        gn = torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
         optimizer.step()
         scheduler.step()
 
@@ -107,12 +109,15 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
         total_loss += loss_dict["total"] * bs
         total_huber += loss_dict["huber"] * bs
         total_rank += loss_dict["rank"] * bs
+        total_grad_norm += gn.item()
         n_samples += bs
+        n_steps += 1
 
     return {
         "loss": total_loss / n_samples,
         "huber": total_huber / n_samples,
         "rank": total_rank / n_samples,
+        "grad_norm": total_grad_norm / max(n_steps, 1),
     }
 
 
@@ -293,6 +298,7 @@ def main():
             f"val_loss={val_metrics['loss']:.4f} | "
             f"val_R={val_metrics['pearson']:.4f} | "
             f"val_rho={val_metrics['spearman']:.4f} | "
+            f"gnorm={train_metrics['grad_norm']:.2f} | "
             f"lr={lr:.2e} | "
             f"{elapsed:.1f}s"
         )
@@ -305,6 +311,7 @@ def main():
                 "train/loss": train_metrics["loss"],
                 "train/huber": train_metrics["huber"],
                 "train/rank": train_metrics["rank"],
+                "train/grad_norm": train_metrics["grad_norm"],
                 "val/loss": val_metrics["loss"],
                 "val/pearson": val_metrics["pearson"],
                 "val/spearman": val_metrics["spearman"],
