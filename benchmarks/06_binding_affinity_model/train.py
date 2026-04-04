@@ -34,7 +34,7 @@ import yaml
 from scipy.stats import pearsonr, spearmanr
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
-from torch_geometric.loader import DataLoader
+from torch.utils.data import DataLoader
 
 # Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -46,7 +46,7 @@ from benchmarks.utils.metrics import summarize_regression  # noqa: E402
 from model.binding_affinity_model import BindingAffinityModel  # noqa: E402
 from model.losses import CompositeLoss  # noqa: E402
 from data.collate import custom_collate  # noqa: E402
-from data.build_dataset import BindingAffinityDataset  # noqa: E402
+from data.build_dataset import load_dataset  # noqa: E402
 
 
 def load_config(config_path: str, cli_overrides: dict) -> dict:
@@ -223,22 +223,9 @@ def main():
             print("Run build_dataset.py first.")
             sys.exit(1)
 
-    train_data, train_slices = torch.load(str(train_path), weights_only=False)
-    val_data, val_slices = torch.load(str(val_path), weights_only=False)
-    test_data, test_slices = torch.load(str(test_path), weights_only=False)
-
-    # Reconstruct datasets
-    train_dataset = BindingAffinityDataset.__new__(BindingAffinityDataset)
-    train_dataset.data, train_dataset.slices = train_data, train_slices
-    train_dataset._data_list = None
-
-    val_dataset = BindingAffinityDataset.__new__(BindingAffinityDataset)
-    val_dataset.data, val_dataset.slices = val_data, val_slices
-    val_dataset._data_list = None
-
-    test_dataset = BindingAffinityDataset.__new__(BindingAffinityDataset)
-    test_dataset.data, test_dataset.slices = test_data, test_slices
-    test_dataset._data_list = None
+    train_dataset = load_dataset(str(train_path))
+    val_dataset = load_dataset(str(val_path))
+    test_dataset = load_dataset(str(test_path))
 
     print(f"  Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
 
