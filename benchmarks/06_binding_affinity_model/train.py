@@ -390,6 +390,11 @@ def main():
 
 
 if __name__ == "__main__":
+    # Resolve config path before chdir (user may pass relative path from project root)
+    if len(sys.argv) > 1:
+        for i, arg in enumerate(sys.argv):
+            if arg == "--config" and i + 1 < len(sys.argv):
+                sys.argv[i + 1] = str(Path(sys.argv[i + 1]).resolve())
     # Change to script directory for relative imports
     os.chdir(SCRIPT_DIR)
     main()
