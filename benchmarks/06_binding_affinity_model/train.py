@@ -275,7 +275,9 @@ def main():
     # Training loop
     best_val_loss = float("inf")
     patience_counter = 0
-    ckpt_dir = Path(config["output"]["checkpoint_dir"])
+    # Use config-specific checkpoint dir to avoid loading wrong weights
+    run_name = f"f{fold}_{mc['proj_dim']}d_{mc['et_layers']}L_{mc.get('ligand_backend', 'auto')}"
+    ckpt_dir = Path(config["output"]["checkpoint_dir"]) / run_name
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     results_dir = Path(config["output"]["results_dir"])
     results_dir.mkdir(parents=True, exist_ok=True)
