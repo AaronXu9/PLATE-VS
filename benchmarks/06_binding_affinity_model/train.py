@@ -252,6 +252,7 @@ def main():
         cross_attn_layers=mc["cross_attn_layers"],
         cross_attn_heads=mc["cross_attn_heads"],
         dropout=mc["dropout"],
+        ligand_backend=mc.get("ligand_backend", "auto"),
     ).to(device)
 
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)

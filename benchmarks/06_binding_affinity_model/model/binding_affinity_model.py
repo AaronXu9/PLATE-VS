@@ -34,6 +34,7 @@ class BindingAffinityModel(nn.Module):
         cross_attn_layers: int = 3,
         cross_attn_heads: int = 8,
         dropout: float = 0.1,
+        ligand_backend: str = "auto",
     ):
         super().__init__()
 
@@ -45,6 +46,7 @@ class BindingAffinityModel(nn.Module):
             num_rbf=et_rbf,
             cutoff=et_cutoff,
             proj_dim=proj_dim,
+            backend=ligand_backend,
         )
         self.fusion = CrossAttentionFusion(
             d_model=proj_dim,

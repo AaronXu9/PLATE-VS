@@ -68,6 +68,8 @@ class TorchMDNETEncoder(nn.Module):
         TorchMD_ET = _try_import_torchmd_et()
         if TorchMD_ET is None:
             raise ImportError("torchmd-net not available")
+        # max_num_neighbors scales with cutoff — wider cutoff = more pairs
+        max_neighbors = 64 if cutoff <= 6.0 else 128
         self.et = TorchMD_ET(
             hidden_channels=hidden_channels,
             num_layers=num_layers,
@@ -76,6 +78,7 @@ class TorchMDNETEncoder(nn.Module):
             cutoff_lower=0.0,
             cutoff_upper=cutoff,
             max_z=max_z,
+            max_num_neighbors=max_neighbors,
             attn_activation="silu",
             distance_influence="both",
         )
