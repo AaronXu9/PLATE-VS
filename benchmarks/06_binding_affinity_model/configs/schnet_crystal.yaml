@@ -1,0 +1,53 @@
+# SchNet with crystal ligand poses
+# Best SchNet config (default) but with crystal dataset
+
+data:
+  dataset_dir: "../../../data/pdbbind_cleansplit/binding_affinity_crystal_dataset"
+  labels_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_dict.json"
+  split_path: "../../../data/pdbbind_cleansplit/labels/PDBbind_data_split_cleansplit.json"
+  clusters_path: "../../../data/pdbbind_cleansplit/labels/clusters_casf2016.json"
+  batch_size: 16
+  num_workers: 4
+  max_pocket_residues: 80
+  max_ligand_atoms: 100
+
+model:
+  esm_dim: 1088
+  proj_dim: 256
+  et_layers: 6
+  et_heads: 8
+  et_rbf: 64
+  et_cutoff: 5.0
+  cross_attn_layers: 3
+  cross_attn_heads: 8
+  dropout: 0.1
+  ligand_backend: "schnet"
+
+loss:
+  lambda_rank: 0.05
+  huber_delta: 1.0
+  rank_margin: 0.5
+  rank_sample_size: 64
+
+training:
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  warmup_steps: 2000
+  max_epochs: 100
+  patience: 20
+  grad_clip: 0.5
+  seed: 42
+
+cv:
+  n_folds: 5
+  fold: 0
+
+wandb:
+  enabled: true
+  project: "binding-affinity-pdbbind"
+  entity: null
+  tags: ["cleansplit", "schnet-crystal", "crystal-poses"]
+
+output:
+  results_dir: "./results"
+  checkpoint_dir: "./checkpoints"
