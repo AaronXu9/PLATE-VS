@@ -43,6 +43,29 @@ PROT_EMB_START = BASE_FEAT_DIM
 PROT_EMB_DIM = 1088  # 320 + 768
 
 
+def load_crystal_sdf(sdf_path: str) -> dict | None:
+    """Load ligand z and pos from a crystal SDF file.
+
+    Returns dict with 'z' (atomic numbers) and 'pos' (3D coordinates),
+    or None if loading fails.
+    """
+    supplier = Chem.SDMolSupplier(sdf_path, removeHs=True)
+    mol = next(supplier, None)
+    if mol is None or mol.GetNumConformers() == 0:
+        return None
+
+    conf = mol.GetConformer()
+    pos = conf.GetPositions()
+    # Check for degenerate coords (all zeros)
+    if abs(pos).max() < 0.01:
+        return None
+
+    return {
+        "z": torch.tensor([a.GetAtomicNum() for a in mol.GetAtoms()], dtype=torch.long),
+        "pos": torch.tensor(pos, dtype=torch.float32),
+    }
+
+
 def smiles_to_3d(smiles: str, max_attempts: int = 3) -> dict | None:
     """Generate 3D conformer from SMILES using RDKit.
 
@@ -167,8 +190,12 @@ class BindingAffinityDataset(InMemoryDataset):
         output_path: str,
         max_ligand_atoms: int = 100,
         max_pocket_res: int = 80,
+        crystal_dir: str | None = None,
     ) -> int:
         """Build dataset from components and save to disk.
+
+        If crystal_dir is provided, loads ligand 3D from crystal SDF files
+        (falling back to RDKit conformer if crystal SDF is missing).
 
         Returns number of successfully built samples.
         """
@@ -176,6 +203,10 @@ class BindingAffinityDataset(InMemoryDataset):
         n_skip_smiles = 0
         n_skip_3d = 0
         n_skip_prot = 0
+        n_crystal = 0
+        n_rdkit = 0
+
+        crystal_path = Path(crystal_dir) if crystal_dir else None
 
         for i, pdb_id in enumerate(pdb_ids):
             pid = pdb_id.lower()
@@ -186,13 +217,24 @@ class BindingAffinityDataset(InMemoryDataset):
                 continue
             pk = float(entry["log_kd_ki"])
 
-            # Get SMILES → 3D conformer
-            smiles = smiles_lookup.get(pid)
-            if smiles is None:
-                n_skip_smiles += 1
-                continue
+            # Get ligand 3D: try crystal SDF first, fall back to RDKit
+            lig_data = None
+            if crystal_path:
+                sdf_file = crystal_path / f"{pid}_ligand.sdf"
+                if sdf_file.exists():
+                    lig_data = load_crystal_sdf(str(sdf_file))
+                    if lig_data is not None:
+                        n_crystal += 1
 
-            lig_data = smiles_to_3d(smiles)
+            if lig_data is None:
+                smiles = smiles_lookup.get(pid)
+                if smiles is None:
+                    n_skip_smiles += 1
+                    continue
+                lig_data = smiles_to_3d(smiles)
+                if lig_data is not None:
+                    n_rdkit += 1
+
             if lig_data is None:
                 n_skip_3d += 1
                 continue
@@ -241,7 +283,8 @@ class BindingAffinityDataset(InMemoryDataset):
 
         print(
             f"    Built {len(data_list)} samples "
-            f"(skip: {n_skip_smiles} no SMILES, {n_skip_3d} 3D fail, "
+            f"(crystal: {n_crystal}, rdkit: {n_rdkit}, "
+            f"skip: {n_skip_smiles} no SMILES, {n_skip_3d} 3D fail, "
             f"{n_skip_prot} no protein)"
         )
         return len(data_list)
@@ -301,6 +344,12 @@ def main():
     parser.add_argument("--max-ligand-atoms", type=int, default=100)
     parser.add_argument("--max-pocket-res", type=int, default=80)
     parser.add_argument(
+        "--crystal-dir",
+        type=str,
+        default=None,
+        help="Directory with crystal ligand SDFs (e.g., data/pdbbind_cleansplit/crystal_ligands)",
+    )
+    parser.add_argument(
         "--folds",
         type=str,
         default="0,1,2,3,4",
@@ -341,7 +390,7 @@ def main():
         print(f"\nBuilding {test_set} ({len(pdb_ids)} complexes)...")
         BindingAffinityDataset.build_and_save(
             pdb_ids, smiles_lookup, labels_dict, gems_index, str(out_path),
-            args.max_ligand_atoms, args.max_pocket_res,
+            args.max_ligand_atoms, args.max_pocket_res, args.crystal_dir,
         )
 
     # Build train/val folds
@@ -367,7 +416,7 @@ def main():
             print(f"\nBuilding {label}_f{fold} ({len(pdb_ids)} complexes)...")
             BindingAffinityDataset.build_and_save(
                 pdb_ids, smiles_lookup, labels_dict, gems_index, str(out_path),
-                args.max_ligand_atoms, args.max_pocket_res,
+                args.max_ligand_atoms, args.max_pocket_res, args.crystal_dir,
             )
 
     print(f"\nDatasets saved to {output_dir}")
