@@ -1,0 +1,48 @@
+# PLATE-VS Virtual Screening — default config
+# Binary classification: active vs decoy ranking
+
+data:
+  registry_path: "../../../training_data_full/registry_2d_split.csv"
+  protein_emb_path: "../../../data/plate_vs_protein_embeddings/esm2_embeddings.npz"
+  similarity_threshold: "0p7"
+  include_decoys: true
+  max_decoys_per_target: 100      # cap decoys for training efficiency
+  batch_size: 32
+  num_workers: 4
+  max_pocket_residues: 80
+  max_ligand_atoms: 80
+
+model:
+  esm_dim: 320                    # ESM2-t6 only (no ANKH for PLATE-VS)
+  proj_dim: 256
+  et_layers: 4
+  et_heads: 8
+  et_rbf: 64
+  et_cutoff: 10.0
+  cross_attn_layers: 3
+  cross_attn_heads: 8
+  dropout: 0.15
+  ligand_backend: "schnet"        # SchNet for speed on large dataset
+
+loss:
+  type: "bce"                     # binary cross-entropy
+  pos_weight: 1.0                 # adjust for class imbalance if needed
+
+training:
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  warmup_steps: 2000
+  max_epochs: 30                  # fewer epochs for large dataset
+  patience: 10
+  grad_clip: 0.5
+  seed: 42
+
+wandb:
+  enabled: true
+  project: "plate-vs-dl"
+  entity: null
+  tags: ["plate-vs", "virtual-screening", "schnet", "0p7"]
+
+output:
+  results_dir: "./results"
+  checkpoint_dir: "./checkpoints"
