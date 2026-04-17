@@ -73,7 +73,14 @@ def custom_collate(data_list: list[Data]) -> AffinityBatch:
         d_new = Data(z=d.z, pos=d.pos)
         stripped.append(d_new)
         y_list.append(d.y.flatten())
-        pid = d.pdb_id
+        # Support both pdb_id (PDBbind) and uniprot_id (PLATE-VS)
+        pid = None
+        for key in ("pdb_id", "uniprot_id"):
+            if hasattr(d, key):
+                pid = getattr(d, key)
+                break
+        if pid is None:
+            pid = str(i)
         if isinstance(pid, (list, tuple)):
             pid = pid[0] if len(pid) == 1 else str(pid)
         elif isinstance(pid, torch.Tensor):
