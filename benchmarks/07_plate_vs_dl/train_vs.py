@@ -30,14 +30,24 @@ from torch.utils.data import DataLoader
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
-# Add paths for imports
-sys.path.insert(0, str(SCRIPT_DIR))
-sys.path.insert(0, str(PROJECT_ROOT / "benchmarks" / "06_binding_affinity_model"))
+# Add paths for imports — order matters: our code first, then 06 for shared components
+BA_DIR = str(PROJECT_ROOT / "benchmarks" / "06_binding_affinity_model")
 sys.path.insert(0, str(PROJECT_ROOT / "external" / "GEMS"))
+sys.path.insert(0, BA_DIR)
+sys.path.insert(0, str(SCRIPT_DIR))  # must be first for our data/model packages
 
-from data.plate_vs_dataset import PlateVSDataset
-from data.collate import custom_collate  # reuse from 06_binding_affinity_model
-from model.vs_model import VirtualScreeningModel
+from data.plate_vs_dataset import PlateVSDataset  # from 07_plate_vs_dl/data/
+
+# Import collate from 06 explicitly via importlib to avoid package shadowing
+import importlib.util
+_collate_spec = importlib.util.spec_from_file_location(
+    "ba_collate", os.path.join(BA_DIR, "data", "collate.py")
+)
+_collate_mod = importlib.util.module_from_spec(_collate_spec)
+_collate_spec.loader.exec_module(_collate_mod)
+custom_collate = _collate_mod.custom_collate
+
+from model.vs_model import VirtualScreeningModel  # from 07_plate_vs_dl/model/
 
 
 def load_config(config_path: str) -> dict:
@@ -341,5 +351,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # Resolve config path before chdir
+    if len(sys.argv) > 1:
+        for i, arg in enumerate(sys.argv):
+            if arg == "--config" and i + 1 < len(sys.argv):
+                sys.argv[i + 1] = str(Path(sys.argv[i + 1]).resolve())
     os.chdir(SCRIPT_DIR)
     main()

@@ -12,15 +12,29 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
-# Reuse components from the binding affinity model
-SCRIPT_DIR = Path(__file__).resolve().parent
-BA_MODEL_DIR = SCRIPT_DIR.parent.parent / "06_binding_affinity_model"
-sys.path.insert(0, str(BA_MODEL_DIR))
+# Reuse components from the binding affinity model via importlib
+# (avoids sys.path conflicts between 06 and 07 package namespaces)
+import importlib.util
+import os
 
-from model.ligand_encoder import LigandEncoder
-from model.protein_encoder import ProteinEncoder
-from model.cross_attention import CrossAttentionFusion
-from data.collate import scatter_to_padded
+SCRIPT_DIR = Path(__file__).resolve().parent
+BA_DIR = SCRIPT_DIR.parent.parent / "06_binding_affinity_model"
+
+def _import_from_ba(module_name, file_path):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+_lig_enc = _import_from_ba("ligand_encoder", BA_DIR / "model" / "ligand_encoder.py")
+_prot_enc = _import_from_ba("protein_encoder", BA_DIR / "model" / "protein_encoder.py")
+_cross_attn = _import_from_ba("cross_attention", BA_DIR / "model" / "cross_attention.py")
+_collate = _import_from_ba("collate", BA_DIR / "data" / "collate.py")
+
+LigandEncoder = _lig_enc.LigandEncoder
+ProteinEncoder = _prot_enc.ProteinEncoder
+CrossAttentionFusion = _cross_attn.CrossAttentionFusion
+scatter_to_padded = _collate.scatter_to_padded
 
 
 class VSPredictionHead(nn.Module):
