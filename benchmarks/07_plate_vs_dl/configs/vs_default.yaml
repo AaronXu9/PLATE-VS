@@ -8,7 +8,7 @@ data:
   include_decoys: true
   max_decoys_per_target: 100      # cap decoys for training efficiency
   batch_size: 32
-  num_workers: 4
+  num_workers: 0              # must be 0 — AffinityBatch can't pickle across workers
   max_pocket_residues: 80
   max_ligand_atoms: 80
 
