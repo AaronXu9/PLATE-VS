@@ -1,0 +1,1042 @@
+{
+  "task_type": "regression",
+  "model_type": "gnina",
+  "model_architecture": "gnina_cnn_rescore",
+  "feature_type": "3d_structure_cnn",
+  "dataset": "pdbbind_cleansplit",
+  "test_set": "casf2016",
+  "similarity_threshold": "cleansplit",
+  "use_precomputed_split": true,
+  "training_history": {
+    "train_metrics": null,
+    "val_metrics": null,
+    "test_metrics": {
+      "mse": 1.688291,
+      "rmse": 1.299343,
+      "mae": 1.048168,
+      "r2": 0.631851,
+      "pearson": 0.808103,
+      "spearman": 0.793765,
+      "kendall": 0.606805,
+      "ci": 0.803698
+    },
+    "n_train_samples": null,
+    "n_val_samples": null,
+    "n_test_samples": 251,
+    "training_time": 1884.4
+  },
+  "docking_params": {
+    "tool": "gnina",
+    "num_modes": 10,
+    "exhaustiveness": 8,
+    "cnn_scoring": "rescore",
+    "autobox_add": 4.0,
+    "score_used": "CNNaffinity"
+  },
+  "per_complex_predictions": {
+    "3g2z": {
+      "y_true": 2.36,
+      "y_pred": 3.4193
+    },
+    "3f3c": {
+      "y_true": 6.02,
+      "y_pred": 5.2712
+    },
+    "2hb1": {
+      "y_true": 3.8,
+      "y_pred": 4.3376
+    },
+    "5tmn": {
+      "y_true": 8.04,
+      "y_pred": 7.1154
+    },
+    "2v00": {
+      "y_true": 3.66,
+      "y_pred": 4.5948
+    },
+    "3d6q": {
+      "y_true": 3.76,
+      "y_pred": 4.5856
+    },
+    "4dld": {
+      "y_true": 5.82,
+      "y_pred": 6.5896
+    },
+    "3jya": {
+      "y_true": 6.89,
+      "y_pred": 7.0367
+    },
+    "3b5r": {
+      "y_true": 8.77,
+      "y_pred": 8.6965
+    },
+    "3ryj": {
+      "y_true": 7.8,
+      "y_pred": 7.359
+    },
+    "4m0y": {
+      "y_true": 6.46,
+      "y_pred": 6.5392
+    },
+    "4wiv": {
+      "y_true": 6.26,
+      "y_pred": 6.8453
+    },
+    "3l7b": {
+      "y_true": 2.4,
+      "y_pred": 4.3985
+    },
+    "4cr9": {
+      "y_true": 4.1,
+      "y_pred": 4.6119
+    },
+    "5a7b": {
+      "y_true": 3.57,
+      "y_pred": 5.3864
+    },
+    "4eor": {
+      "y_true": 6.3,
+      "y_pred": 7.5104
+    },
+    "1h23": {
+      "y_true": 8.35,
+      "y_pred": 8.4881
+    },
+    "2j7h": {
+      "y_true": 7.19,
+      "y_pred": 5.9851
+    },
+    "3gnw": {
+      "y_true": 9.1,
+      "y_pred": 8.1965
+    },
+    "4mme": {
+      "y_true": 6.5,
+      "y_pred": 6.5611
+    },
+    "3rsx": {
+      "y_true": 4.41,
+      "y_pred": 4.6556
+    },
+    "4jxs": {
+      "y_true": 4.74,
+      "y_pred": 4.2602
+    },
+    "3n76": {
+      "y_true": 6.85,
+      "y_pred": 6.2652
+    },
+    "2xdl": {
+      "y_true": 3.1,
+      "y_pred": 5.4225
+    },
+    "3ejr": {
+      "y_true": 8.57,
+      "y_pred": 7.1097
+    },
+    "2r9w": {
+      "y_true": 5.1,
+      "y_pred": 4.5791
+    },
+    "4w9l": {
+      "y_true": 5.02,
+      "y_pred": 7.3391
+    },
+    "1oyt": {
+      "y_true": 7.24,
+      "y_pred": 7.5586
+    },
+    "2qe4": {
+      "y_true": 7.96,
+      "y_pred": 7.9061
+    },
+    "5c2h": {
+      "y_true": 11.09,
+      "y_pred": 8.8635
+    },
+    "2vkm": {
+      "y_true": 8.74,
+      "y_pred": 8.0421
+    },
+    "2qnq": {
+      "y_true": 6.11,
+      "y_pred": 8.2725
+    },
+    "4lzs": {
+      "y_true": 4.8,
+      "y_pred": 4.6717
+    },
+    "3dd0": {
+      "y_true": 9.0,
+      "y_pred": 7.5366
+    },
+    "2pog": {
+      "y_true": 9.54,
+      "y_pred": 7.7459
+    },
+    "2wer": {
+      "y_true": 7.05,
+      "y_pred": 5.458
+    },
+    "2weg": {
+      "y_true": 6.5,
+      "y_pred": 6.8578
+    },
+    "2xys": {
+      "y_true": 7.42,
+      "y_pred": 7.9619
+    },
+    "2qbq": {
+      "y_true": 7.44,
+      "y_pred": 6.8583
+    },
+    "3pyy": {
+      "y_true": 6.86,
+      "y_pred": 6.8455
+    },
+    "3zso": {
+      "y_true": 5.12,
+      "y_pred": 6.4262
+    },
+    "4k18": {
+      "y_true": 8.96,
+      "y_pred": 8.3101
+    },
+    "4djv": {
+      "y_true": 6.72,
+      "y_pred": 6.6267
+    },
+    "4cig": {
+      "y_true": 3.67,
+      "y_pred": 6.3312
+    },
+    "1nvq": {
+      "y_true": 8.25,
+      "y_pred": 8.1296
+    },
+    "3fv2": {
+      "y_true": 8.11,
+      "y_pred": 6.7984
+    },
+    "2xb8": {
+      "y_true": 7.59,
+      "y_pred": 6.2394
+    },
+    "4rfm": {
+      "y_true": 10.05,
+      "y_pred": 8.4357
+    },
+    "1o0h": {
+      "y_true": 5.92,
+      "y_pred": 4.8822
+    },
+    "4u4s": {
+      "y_true": 2.92,
+      "y_pred": 4.4206
+    },
+    "3rlr": {
+      "y_true": 7.52,
+      "y_pred": 7.4775
+    },
+    "1pxn": {
+      "y_true": 7.15,
+      "y_pred": 7.616
+    },
+    "4j28": {
+      "y_true": 5.7,
+      "y_pred": 7.129
+    },
+    "4e6q": {
+      "y_true": 8.36,
+      "y_pred": 7.5174
+    },
+    "1q8u": {
+      "y_true": 5.96,
+      "y_pred": 6.6499
+    },
+    "2zb1": {
+      "y_true": 6.32,
+      "y_pred": 7.5993
+    },
+    "1s38": {
+      "y_true": 5.15,
+      "y_pred": 5.3549
+    },
+    "3n86": {
+      "y_true": 5.64,
+      "y_pred": 6.3078
+    },
+    "1uto": {
+      "y_true": 2.27,
+      "y_pred": 3.8592
+    },
+    "2wvt": {
+      "y_true": 6.12,
+      "y_pred": 5.6614
+    },
+    "4dli": {
+      "y_true": 5.62,
+      "y_pred": 6.6708
+    },
+    "3e92": {
+      "y_true": 8.0,
+      "y_pred": 7.7736
+    },
+    "3oe5": {
+      "y_true": 6.88,
+      "y_pred": 7.0732
+    },
+    "3f3e": {
+      "y_true": 7.7,
+      "y_pred": 4.7512
+    },
+    "2xj7": {
+      "y_true": 6.66,
+      "y_pred": 6.0496
+    },
+    "4f2w": {
+      "y_true": 11.3,
+      "y_pred": 9.6501
+    },
+    "3p5o": {
+      "y_true": 7.26,
+      "y_pred": 7.1164
+    },
+    "3ivg": {
+      "y_true": 4.3,
+      "y_pred": 6.6094
+    },
+    "3syr": {
+      "y_true": 5.1,
+      "y_pred": 4.6424
+    },
+    "4hge": {
+      "y_true": 7.92,
+      "y_pred": 7.8088
+    },
+    "3uev": {
+      "y_true": 5.89,
+      "y_pred": 5.638
+    },
+    "4ih5": {
+      "y_true": 4.11,
+      "y_pred": 4.9943
+    },
+    "4j3l": {
+      "y_true": 7.8,
+      "y_pred": 7.589
+    },
+    "3fcq": {
+      "y_true": 2.77,
+      "y_pred": 4.2257
+    },
+    "2brb": {
+      "y_true": 4.86,
+      "y_pred": 6.8373
+    },
+    "4ddh": {
+      "y_true": 3.3,
+      "y_pred": 4.1106
+    },
+    "4ddk": {
+      "y_true": 2.29,
+      "y_pred": 3.4018
+    },
+    "3ebp": {
+      "y_true": 5.91,
+      "y_pred": 5.216
+    },
+    "3mss": {
+      "y_true": 4.66,
+      "y_pred": 8.4623
+    },
+    "1g2k": {
+      "y_true": 7.96,
+      "y_pred": 9.0236
+    },
+    "3gy4": {
+      "y_true": 5.1,
+      "y_pred": 3.9067
+    },
+    "1o3f": {
+      "y_true": 7.96,
+      "y_pred": 5.9848
+    },
+    "1eby": {
+      "y_true": 9.7,
+      "y_pred": 9.57
+    },
+    "3u9q": {
+      "y_true": 4.38,
+      "y_pred": 4.5539
+    },
+    "3u8k": {
+      "y_true": 8.66,
+      "y_pred": 7.7404
+    },
+    "3gr2": {
+      "y_true": 2.52,
+      "y_pred": 3.9907
+    },
+    "3ueu": {
+      "y_true": 5.24,
+      "y_pred": 5.3873
+    },
+    "3zt2": {
+      "y_true": 2.84,
+      "y_pred": 5.3217
+    },
+    "1gpn": {
+      "y_true": 6.48,
+      "y_pred": 7.5041
+    },
+    "4agp": {
+      "y_true": 4.69,
+      "y_pred": 5.9331
+    },
+    "1qkt": {
+      "y_true": 9.04,
+      "y_pred": 7.7895
+    },
+    "2vw5": {
+      "y_true": 8.52,
+      "y_pred": 7.4593
+    },
+    "1k1i": {
+      "y_true": 6.58,
+      "y_pred": 7.7423
+    },
+    "2yge": {
+      "y_true": 5.06,
+      "y_pred": 6.9775
+    },
+    "3g0w": {
+      "y_true": 9.52,
+      "y_pred": 8.3881
+    },
+    "2xbv": {
+      "y_true": 8.43,
+      "y_pred": 8.6587
+    },
+    "4qd6": {
+      "y_true": 8.64,
+      "y_pred": 8.2888
+    },
+    "3ao4": {
+      "y_true": 2.07,
+      "y_pred": 4.1565
+    },
+    "1p1q": {
+      "y_true": 4.89,
+      "y_pred": 5.8481
+    },
+    "3rr4": {
+      "y_true": 4.55,
+      "y_pred": 6.7661
+    },
+    "1e66": {
+      "y_true": 9.89,
+      "y_pred": 8.0646
+    },
+    "4k77": {
+      "y_true": 6.63,
+      "y_pred": 6.6462
+    },
+    "4tmn": {
+      "y_true": 10.17,
+      "y_pred": 7.0255
+    },
+    "3uew": {
+      "y_true": 6.31,
+      "y_pred": 5.9484
+    },
+    "2qbr": {
+      "y_true": 6.33,
+      "y_pred": 6.1656
+    },
+    "2qbp": {
+      "y_true": 8.4,
+      "y_pred": 6.8262
+    },
+    "2w4x": {
+      "y_true": 4.85,
+      "y_pred": 4.2932
+    },
+    "3e93": {
+      "y_true": 8.85,
+      "y_pred": 8.4196
+    },
+    "2al5": {
+      "y_true": 8.4,
+      "y_pred": 6.1257
+    },
+    "3zdg": {
+      "y_true": 7.1,
+      "y_pred": 6.6143
+    },
+    "3gbb": {
+      "y_true": 6.9,
+      "y_pred": 6.7512
+    },
+    "4f09": {
+      "y_true": 6.7,
+      "y_pred": 7.4242
+    },
+    "3dx1": {
+      "y_true": 3.58,
+      "y_pred": 4.8989
+    },
+    "4ty7": {
+      "y_true": 9.52,
+      "y_pred": 8.0537
+    },
+    "3u8n": {
+      "y_true": 10.17,
+      "y_pred": 8.4059
+    },
+    "4ivd": {
+      "y_true": 9.52,
+      "y_pred": 8.1843
+    },
+    "3fv1": {
+      "y_true": 9.3,
+      "y_pred": 7.5561
+    },
+    "3dx2": {
+      "y_true": 6.82,
+      "y_pred": 5.9224
+    },
+    "3uo4": {
+      "y_true": 6.52,
+      "y_pred": 7.5809
+    },
+    "1mq6": {
+      "y_true": 11.15,
+      "y_pred": 8.8652
+    },
+    "4e5w": {
+      "y_true": 7.66,
+      "y_pred": 8.0907
+    },
+    "1z9g": {
+      "y_true": 5.64,
+      "y_pred": 6.1071
+    },
+    "3ozt": {
+      "y_true": 4.13,
+      "y_pred": 7.0289
+    },
+    "2wbg": {
+      "y_true": 4.45,
+      "y_pred": 7.2955
+    },
+    "1owh": {
+      "y_true": 7.4,
+      "y_pred": 6.3705
+    },
+    "4ea2": {
+      "y_true": 6.44,
+      "y_pred": 7.1004
+    },
+    "3f3d": {
+      "y_true": 7.16,
+      "y_pred": 5.1369
+    },
+    "1w4o": {
+      "y_true": 5.22,
+      "y_pred": 4.8014
+    },
+    "4gid": {
+      "y_true": 10.77,
+      "y_pred": 8.407
+    },
+    "1gpk": {
+      "y_true": 5.37,
+      "y_pred": 7.2415
+    },
+    "4de2": {
+      "y_true": 4.12,
+      "y_pred": 4.4992
+    },
+    "2p4y": {
+      "y_true": 9.0,
+      "y_pred": 8.0269
+    },
+    "4m0z": {
+      "y_true": 5.19,
+      "y_pred": 7.5422
+    },
+    "2wtv": {
+      "y_true": 8.74,
+      "y_pred": 8.3591
+    },
+    "4eky": {
+      "y_true": 3.52,
+      "y_pred": 4.884
+    },
+    "4w9c": {
+      "y_true": 4.65,
+      "y_pred": 6.6216
+    },
+    "4ivb": {
+      "y_true": 8.72,
+      "y_pred": 8.1659
+    },
+    "2yfe": {
+      "y_true": 6.63,
+      "y_pred": 6.3846
+    },
+    "2br1": {
+      "y_true": 5.14,
+      "y_pred": 7.046
+    },
+    "3b1m": {
+      "y_true": 8.48,
+      "y_pred": 7.088
+    },
+    "3ehy": {
+      "y_true": 5.85,
+      "y_pred": 5.012
+    },
+    "3up2": {
+      "y_true": 7.4,
+      "y_pred": 7.6228
+    },
+    "5dwr": {
+      "y_true": 11.22,
+      "y_pred": 9.1734
+    },
+    "4j21": {
+      "y_true": 7.41,
+      "y_pred": 7.1268
+    },
+    "4w9h": {
+      "y_true": 6.73,
+      "y_pred": 6.945
+    },
+    "1o5b": {
+      "y_true": 5.77,
+      "y_pred": 4.9851
+    },
+    "4crc": {
+      "y_true": 8.72,
+      "y_pred": 8.6856
+    },
+    "3g31": {
+      "y_true": 2.89,
+      "y_pred": 4.0308
+    },
+    "4gfm": {
+      "y_true": 7.22,
+      "y_pred": 6.6558
+    },
+    "2wn9": {
+      "y_true": 8.52,
+      "y_pred": 6.6332
+    },
+    "4kz6": {
+      "y_true": 3.1,
+      "y_pred": 4.0956
+    },
+    "1vso": {
+      "y_true": 4.72,
+      "y_pred": 6.1776
+    },
+    "1r5y": {
+      "y_true": 6.46,
+      "y_pred": 5.6223
+    },
+    "3uuo": {
+      "y_true": 7.96,
+      "y_pred": 7.4433
+    },
+    "4twp": {
+      "y_true": 10.0,
+      "y_pred": 8.0333
+    },
+    "2cbv": {
+      "y_true": 5.48,
+      "y_pred": 5.4285
+    },
+    "3nw9": {
+      "y_true": 9.0,
+      "y_pred": 7.7716
+    },
+    "2ymd": {
+      "y_true": 3.16,
+      "y_pred": 5.3584
+    },
+    "3pxf": {
+      "y_true": 4.43,
+      "y_pred": 4.4505
+    },
+    "1bzc": {
+      "y_true": 4.92,
+      "y_pred": 5.6515
+    },
+    "3jvs": {
+      "y_true": 6.54,
+      "y_pred": 6.197
+    },
+    "4gr0": {
+      "y_true": 9.55,
+      "y_pred": 8.3138
+    },
+    "2x00": {
+      "y_true": 11.33,
+      "y_pred": 8.3907
+    },
+    "2c3i": {
+      "y_true": 7.6,
+      "y_pred": 7.4169
+    },
+    "3udh": {
+      "y_true": 2.85,
+      "y_pred": 5.1708
+    },
+    "4cra": {
+      "y_true": 7.22,
+      "y_pred": 7.3059
+    },
+    "2fxs": {
+      "y_true": 6.06,
+      "y_pred": 5.2378
+    },
+    "4qac": {
+      "y_true": 9.4,
+      "y_pred": 8.3159
+    },
+    "2j78": {
+      "y_true": 6.42,
+      "y_pred": 5.0569
+    },
+    "5aba": {
+      "y_true": 2.98,
+      "y_pred": 4.4453
+    },
+    "3qgy": {
+      "y_true": 7.8,
+      "y_pred": 7.8722
+    },
+    "3ui7": {
+      "y_true": 9.0,
+      "y_pred": 7.6488
+    },
+    "3ozs": {
+      "y_true": 5.33,
+      "y_pred": 7.152
+    },
+    "3wtj": {
+      "y_true": 6.53,
+      "y_pred": 7.6086
+    },
+    "3wz8": {
+      "y_true": 5.82,
+      "y_pred": 7.5064
+    },
+    "3b68": {
+      "y_true": 8.4,
+      "y_pred": 8.5413
+    },
+    "1lpg": {
+      "y_true": 7.09,
+      "y_pred": 7.8823
+    },
+    "1nc3": {
+      "y_true": 5.0,
+      "y_pred": 7.204
+    },
+    "2wnc": {
+      "y_true": 6.32,
+      "y_pred": 7.7933
+    },
+    "3u5j": {
+      "y_true": 5.61,
+      "y_pred": 6.0943
+    },
+    "4eo8": {
+      "y_true": 8.15,
+      "y_pred": 6.9781
+    },
+    "3n7a": {
+      "y_true": 3.7,
+      "y_pred": 4.5786
+    },
+    "1ydr": {
+      "y_true": 5.52,
+      "y_pred": 6.2655
+    },
+    "2cet": {
+      "y_true": 8.02,
+      "y_pred": 7.349
+    },
+    "4agn": {
+      "y_true": 3.97,
+      "y_pred": 4.7468
+    },
+    "1p1n": {
+      "y_true": 6.8,
+      "y_pred": 5.9794
+    },
+    "3nx7": {
+      "y_true": 8.1,
+      "y_pred": 6.7602
+    },
+    "1ydt": {
+      "y_true": 7.32,
+      "y_pred": 7.4987
+    },
+    "3gv9": {
+      "y_true": 2.12,
+      "y_pred": 2.9777
+    },
+    "3tsk": {
+      "y_true": 7.17,
+      "y_pred": 7.7489
+    },
+    "3e5a": {
+      "y_true": 8.23,
+      "y_pred": 8.5167
+    },
+    "5c28": {
+      "y_true": 5.66,
+      "y_pred": 5.1263
+    },
+    "4de1": {
+      "y_true": 5.96,
+      "y_pred": 4.5147
+    },
+    "3k5v": {
+      "y_true": 6.3,
+      "y_pred": 8.5424
+    },
+    "4jia": {
+      "y_true": 9.22,
+      "y_pred": 7.4541
+    },
+    "1u1b": {
+      "y_true": 7.8,
+      "y_pred": 5.6865
+    },
+    "2zcq": {
+      "y_true": 8.82,
+      "y_pred": 6.2486
+    },
+    "3nq9": {
+      "y_true": 4.03,
+      "y_pred": 4.5422
+    },
+    "4de3": {
+      "y_true": 5.52,
+      "y_pred": 4.7885
+    },
+    "2yki": {
+      "y_true": 9.46,
+      "y_pred": 8.7047
+    },
+    "3b27": {
+      "y_true": 5.16,
+      "y_pred": 6.0137
+    },
+    "4mgd": {
+      "y_true": 4.69,
+      "y_pred": 7.7864
+    },
+    "1ps3": {
+      "y_true": 2.28,
+      "y_pred": 5.7752
+    },
+    "3kr8": {
+      "y_true": 8.1,
+      "y_pred": 7.3818
+    },
+    "1nc1": {
+      "y_true": 6.12,
+      "y_pred": 7.2661
+    },
+    "3bgz": {
+      "y_true": 6.26,
+      "y_pred": 6.9422
+    },
+    "1h22": {
+      "y_true": 9.1,
+      "y_pred": 8.4271
+    },
+    "1sqa": {
+      "y_true": 9.21,
+      "y_pred": 7.1526
+    },
+    "4gkm": {
+      "y_true": 5.17,
+      "y_pred": 5.5263
+    },
+    "3fur": {
+      "y_true": 8.0,
+      "y_pred": 8.4099
+    },
+    "4ogj": {
+      "y_true": 6.79,
+      "y_pred": 7.5042
+    },
+    "2w66": {
+      "y_true": 4.05,
+      "y_pred": 4.9373
+    },
+    "3ag9": {
+      "y_true": 8.05,
+      "y_pred": 7.5482
+    },
+    "2xii": {
+      "y_true": 7.2,
+      "y_pred": 7.5225
+    },
+    "4ciw": {
+      "y_true": 4.82,
+      "y_pred": 5.1137
+    },
+    "3ge7": {
+      "y_true": 8.7,
+      "y_pred": 7.9512
+    },
+    "1syi": {
+      "y_true": 5.44,
+      "y_pred": 6.2246
+    },
+    "4llx": {
+      "y_true": 2.89,
+      "y_pred": 4.3333
+    },
+    "4ivc": {
+      "y_true": 10.0,
+      "y_pred": 8.2528
+    },
+    "3kwa": {
+      "y_true": 4.08,
+      "y_pred": 5.9751
+    },
+    "4jfs": {
+      "y_true": 5.27,
+      "y_pred": 6.4808
+    },
+    "1z6e": {
+      "y_true": 9.72,
+      "y_pred": 8.7103
+    },
+    "4f3c": {
+      "y_true": 11.82,
+      "y_pred": 9.3966
+    },
+    "3d4z": {
+      "y_true": 4.89,
+      "y_pred": 5.4537
+    },
+    "4bkt": {
+      "y_true": 3.62,
+      "y_pred": 5.2697
+    },
+    "2iwx": {
+      "y_true": 6.68,
+      "y_pred": 5.6575
+    },
+    "3coy": {
+      "y_true": 6.02,
+      "y_pred": 6.7099
+    },
+    "4jsz": {
+      "y_true": 2.3,
+      "y_pred": 3.4103
+    },
+    "4f9w": {
+      "y_true": 6.94,
+      "y_pred": 7.5457
+    },
+    "1y6r": {
+      "y_true": 10.11,
+      "y_pred": 9.1867
+    },
+    "3gc5": {
+      "y_true": 7.26,
+      "y_pred": 7.4532
+    },
+    "3g2n": {
+      "y_true": 4.09,
+      "y_pred": 4.0497
+    },
+    "3utu": {
+      "y_true": 10.92,
+      "y_pred": 9.0385
+    },
+    "3oe4": {
+      "y_true": 7.47,
+      "y_pred": 7.3252
+    },
+    "4agq": {
+      "y_true": 5.01,
+      "y_pred": 5.8892
+    },
+    "2y5h": {
+      "y_true": 5.79,
+      "y_pred": 7.998
+    },
+    "1q8t": {
+      "y_true": 4.76,
+      "y_pred": 6.1486
+    },
+    "3coz": {
+      "y_true": 5.57,
+      "y_pred": 6.1146
+    },
+    "2fvd": {
+      "y_true": 8.52,
+      "y_pred": 7.5806
+    },
+    "2xnb": {
+      "y_true": 6.83,
+      "y_pred": 8.1731
+    },
+    "2v7a": {
+      "y_true": 8.3,
+      "y_pred": 7.8198
+    },
+    "1bcu": {
+      "y_true": 3.28,
+      "y_pred": 5.4023
+    },
+    "4x6p": {
+      "y_true": 8.3,
+      "y_pred": 8.3628
+    },
+    "3lka": {
+      "y_true": 2.82,
+      "y_pred": 4.4242
+    },
+    "1yc1": {
+      "y_true": 6.17,
+      "y_pred": 6.5546
+    },
+    "4ih7": {
+      "y_true": 5.24,
+      "y_pred": 5.7587
+    },
+    "1z95": {
+      "y_true": 7.12,
+      "y_pred": 7.7587
+    },
+    "1qf1": {
+      "y_true": 7.32,
+      "y_pred": 7.532
+    },
+    "3jvr": {
+      "y_true": 5.72,
+      "y_pred": 5.4264
+    },
+    "3cj4": {
+      "y_true": 6.51,
+      "y_pred": 5.5842
+    },
+    "4w9i": {
+      "y_true": 5.96,
+      "y_pred": 6.9171
+    }
+  }
+}
