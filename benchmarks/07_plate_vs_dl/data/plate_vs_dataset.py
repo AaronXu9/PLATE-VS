@@ -37,7 +37,7 @@ class PlateVSDataset(Dataset):
     """Lazy-loading dataset for PLATE-VS virtual screening.
 
     Each sample is a (protein, ligand) pair with a binary activity label.
-    Ligand 3D conformers are generated on-the-fly from SMILES.
+    Ligand 3D conformers are loaded from precomputed .npz or generated on-the-fly.
     Protein embeddings are precomputed and cached in memory (826 proteins).
     """
 
@@ -52,10 +52,20 @@ class PlateVSDataset(Dataset):
         max_ligand_atoms: int = 100,
         max_pocket_res: int = 80,
         protein_partition: str | None = None,
+        conformer_path: str | None = None,
     ):
         super().__init__()
         self.max_ligand_atoms = max_ligand_atoms
         self.max_pocket_res = max_pocket_res
+
+        # Load precomputed conformers if available
+        self._precomputed_conformers = None
+        if conformer_path and os.path.exists(conformer_path):
+            import pickle
+            print(f"  Loading precomputed conformers from {conformer_path}...")
+            with open(conformer_path, "rb") as f:
+                self._precomputed_conformers = pickle.load(f)
+            print(f"  {len(self._precomputed_conformers):,} precomputed conformers loaded")
 
         # Load protein embeddings (826 proteins, fits in memory)
         print(f"  Loading protein embeddings from {protein_emb_path}...")
@@ -71,7 +81,7 @@ class PlateVSDataset(Dataset):
         )
         print(f"  {len(self.samples)} samples")
 
-        # Cache for generated conformers (LRU-style, keeps recent N)
+        # Cache for on-the-fly conformers (only used when no precomputed data)
         self._conformer_cache = {}
         self._cache_max = 10000
 
@@ -162,7 +172,18 @@ class PlateVSDataset(Dataset):
         )
 
     def _get_conformer(self, smiles: str) -> dict | None:
-        """Generate or retrieve cached 3D conformer."""
+        """Load precomputed conformer or generate on-the-fly."""
+        # Try precomputed first
+        if self._precomputed_conformers is not None:
+            entry = self._precomputed_conformers.get(smiles)
+            if entry is None:
+                return None
+            return {
+                "z": torch.tensor(entry["z"], dtype=torch.long),
+                "pos": torch.tensor(entry["pos"], dtype=torch.float32),
+            }
+
+        # Fallback: on-the-fly generation with cache
         if smiles in self._conformer_cache:
             return self._conformer_cache[smiles]
 
@@ -194,7 +215,6 @@ class PlateVSDataset(Dataset):
 
         # Cache management
         if len(self._conformer_cache) >= self._cache_max:
-            # Remove oldest entry
             oldest = next(iter(self._conformer_cache))
             del self._conformer_cache[oldest]
         self._conformer_cache[smiles] = result

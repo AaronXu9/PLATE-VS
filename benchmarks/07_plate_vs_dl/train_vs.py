@@ -54,8 +54,8 @@ def load_config(config_path: str) -> dict:
 
 
 def resolve_paths(config: dict, config_dir: Path) -> dict:
-    for key in ["registry_path", "protein_emb_path"]:
-        if key in config["data"]:
+    for key in ["registry_path", "protein_emb_path", "conformer_path"]:
+        if key in config["data"] and config["data"][key]:
             config["data"][key] = str((config_dir / config["data"][key]).resolve())
     return config
 
@@ -133,6 +133,7 @@ def main():
 
     # Build datasets
     dc = config["data"]
+    conformer_path = dc.get("conformer_path")
     print("\nLoading train set...")
     train_dataset = PlateVSDataset(
         registry_path=dc["registry_path"],
@@ -143,6 +144,7 @@ def main():
         max_decoys_per_target=dc.get("max_decoys_per_target"),
         max_ligand_atoms=dc["max_ligand_atoms"],
         max_pocket_res=dc["max_pocket_residues"],
+        conformer_path=conformer_path,
     )
 
     print("Loading test set...")
@@ -155,6 +157,7 @@ def main():
         max_decoys_per_target=dc.get("max_decoys_per_target"),
         max_ligand_atoms=dc["max_ligand_atoms"],
         max_pocket_res=dc["max_pocket_residues"],
+        conformer_path=conformer_path,
     )
 
     bs = dc["batch_size"]
