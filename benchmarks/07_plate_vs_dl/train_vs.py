@@ -14,15 +14,12 @@ import math
 import os
 import sys
 import time
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
 import yaml
-from scipy.stats import pearsonr
-from sklearn.metrics import roc_auc_score, average_precision_score
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
@@ -37,6 +34,7 @@ sys.path.insert(0, BA_DIR)
 sys.path.insert(0, str(SCRIPT_DIR))  # must be first for our data/model packages
 
 from data.plate_vs_dataset import PlateVSDataset  # from 07_plate_vs_dl/data/
+from evaluation import evaluate  # from 07_plate_vs_dl/evaluation.py
 
 # Import collate from 06 explicitly via importlib to avoid package shadowing
 import importlib.util
@@ -93,70 +91,6 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
         n_samples += bs
 
     return total_loss / n_samples
-
-
-@torch.no_grad()
-def evaluate(model, loader, criterion, device):
-    model.eval()
-    total_loss = 0.0
-    all_scores, all_labels, all_uids = [], [], []
-    n_samples = 0
-
-    for batch in loader:
-        batch = batch.to(device)
-        logits = model(batch)
-        loss = criterion(logits.squeeze(-1), batch.y.squeeze(-1))
-
-        total_loss += loss.item() * batch.y.shape[0]
-        n_samples += batch.y.shape[0]
-
-        scores = torch.sigmoid(logits).cpu().numpy().flatten()
-        labels = batch.y.cpu().numpy().flatten()
-        all_scores.extend(scores)
-        all_labels.extend(labels)
-        if hasattr(batch, "uniprot_ids"):
-            all_uids.extend(batch.uniprot_ids)
-        elif hasattr(batch, "uniprot_id"):
-            all_uids.extend(batch.uniprot_id)
-
-    all_scores = np.array(all_scores)
-    all_labels = np.array(all_labels)
-
-    # Global metrics
-    metrics = {"loss": total_loss / n_samples}
-    try:
-        metrics["roc_auc"] = float(roc_auc_score(all_labels, all_scores))
-    except ValueError:
-        metrics["roc_auc"] = 0.0
-    try:
-        metrics["avg_precision"] = float(average_precision_score(all_labels, all_scores))
-    except ValueError:
-        metrics["avg_precision"] = 0.0
-
-    # Per-target ROC-AUC
-    if all_uids:
-        target_scores = defaultdict(lambda: {"scores": [], "labels": []})
-        for score, label, uid in zip(all_scores, all_labels, all_uids):
-            target_scores[uid]["scores"].append(score)
-            target_scores[uid]["labels"].append(label)
-
-        per_target_auc = []
-        for uid, data in target_scores.items():
-            labels = np.array(data["labels"])
-            if len(np.unique(labels)) < 2:
-                continue
-            try:
-                auc = roc_auc_score(labels, data["scores"])
-                per_target_auc.append(auc)
-            except ValueError:
-                continue
-
-        if per_target_auc:
-            metrics["per_target_roc_auc_mean"] = float(np.mean(per_target_auc))
-            metrics["per_target_roc_auc_std"] = float(np.std(per_target_auc))
-            metrics["n_targets_evaluated"] = len(per_target_auc)
-
-    return metrics
 
 
 def main():

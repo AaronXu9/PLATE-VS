@@ -260,3 +260,27 @@ A large gap between the two indicates the model relies heavily on protein identi
 | Regression configs | `benchmarks/configs/regression_{rf,gbm,svm}_config.yaml` | RF/GBM/SVM regression |
 | DataLoader | `benchmarks/02_training/data/data_loader.py` | Supports task='regression' |
 | Visualization notebook | `notebooks/soft_split_visualization.ipynb` | Cluster/partition/pChEMBL plots |
+
+---
+
+## Split Selection Guide — PLATE-VS hard vs soft vs PDBbind CleanSplit
+
+This repo ships three evaluation regimes. Which one to use depends on the generalisation claim you want to make.
+
+| Split | What's held out | Construction | When to use |
+|---|---|---|---|
+| **PLATE-VS hard 2D split** (`registry_2d_split.csv`) | Whole protein clusters **and** dissimilar ligands | Each protein cluster assigned atomically to one partition; within each protein, actives split by Tanimoto similarity at a threshold (0p3 / 0p5 / 0p7) | Strictest test of generalisation — can the model screen compounds against protein families it has **never** seen? Expect the largest train/test gap. Use for the "how much did we memorise protein identity" claim. |
+| **PLATE-VS soft split** (`registry_soft_split.csv`) | Individual proteins **within** a cluster; dissimilar ligands | 70/15/15 sampling *inside* each cluster of size ≥ 3; small clusters all go to train. Ligand axis is identical to the hard split. | Realistic operational setting — model sees related proteins during training, tested on held-out family members. The **gap vs hard split** quantifies dependence on protein identity features. Easier than hard by ≈ 0.05–0.17 ROC-AUC on classical models. |
+| **PDBbind CleanSplit** (`data/pdbbind_cleansplit/labels/PDBbind_data_split_cleansplit.json`) | Whole complexes dissimilar to train (cleaned of leakage into CASF benchmarks) | Published by Graber et al. 2025 (GEMS paper). Removes near-duplicates and leakage from PDBbind v.2020 into CASF-2013/2016 tests. 16,908 train / 285 CASF-2016 / 195 CASF-2013. | Regression task (pK prediction). Use to compare against structure-based deep models (GEMS, our dual-encoder) that need 3D co-crystal poses. The canonical published baseline for this kind of work. |
+
+### Which to cite in a result
+
+- A new method's PLATE-VS numbers should be reported on **both** hard and soft splits. The hard split alone is pessimistic; the soft split alone hides identity-memorisation failures.
+- PDBbind CleanSplit CASF-2016 numbers are the community-standard point of comparison for structure-based pK regression.
+- Comparing PLATE-VS and PDBbind head-to-head is **not** a fair model comparison: they measure different things (VS ranking vs. pK regression) and the test distributions are not comparable. Report them side-by-side to show a method's breadth, not to crown a winner.
+
+### Caveats
+
+- Soft-split decoys all live in the `train` partition (shared negative pool). Soft-split test-set "decoys" are a subset of the same pool filtered to test-partition proteins only — DeepCoy was not regenerated per partition.
+- PDBbind CleanSplit is based on **static crystal structures**; docked-pose methods (GNINA self-dock) get a geometric advantage over blind methods (GEMS, dual-encoder). Annotate self-docking caveats when reporting.
+- Neither PLATE-VS split currently evaluates on 0p3 or 0p5 similarity thresholds; all published numbers are at 0p7. The registries support all three if you want to sweep.
