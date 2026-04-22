@@ -53,6 +53,7 @@ class PlateVSDataset(Dataset):
         max_pocket_res: int = 80,
         protein_partition: str | None = None,
         conformer_path: str | None = None,
+        split_column: str = "split",
     ):
         super().__init__()
         self.max_ligand_atoms = max_ligand_atoms
@@ -74,10 +75,11 @@ class PlateVSDataset(Dataset):
         print(f"  {len(self.protein_embs)} proteins loaded")
 
         # Load and filter registry
-        print(f"  Loading registry {split}/{similarity_threshold}...")
+        print(f"  Loading registry {split}/{similarity_threshold} (split_column={split_column})...")
         self.samples = self._load_registry(
             registry_path, split, similarity_threshold,
             include_decoys, max_decoys_per_target, protein_partition,
+            split_column,
         )
         print(f"  {len(self.samples)} samples")
 
@@ -93,48 +95,58 @@ class PlateVSDataset(Dataset):
         include_decoys: bool,
         max_decoys_per_target: int | None,
         protein_partition: str | None,
+        split_column: str = "split",
     ) -> list[dict]:
-        """Load and filter registry CSV into list of sample dicts."""
+        """Load and filter registry CSV into list of sample dicts.
+
+        When split_column="protein_partition" (soft split), actives are filtered
+        by the protein_partition column. Decoys (which all have protein_partition=
+        'train') are included for any protein that has actives in the target split.
+        """
+        # Pass 1: collect actives and identify which proteins are in target split
         samples = []
-        decoy_counts = {}
+        target_proteins = set()
+        decoy_rows = []
 
         with open(registry_path) as f:
             reader = csv.DictReader(f)
             for row in reader:
                 is_active = row["is_active"] == "True"
-                row_split = row["split"]
-                row_thresh = row["similarity_threshold"]
-
-                # Filter actives by split and threshold
-                if is_active:
-                    if row_split != split:
-                        continue
-                    if row_thresh != similarity_threshold:
-                        continue
-                else:
-                    # Decoys
-                    if not include_decoys:
-                        continue
-                    # Apply protein partition filter if specified
-                    if protein_partition and row.get("protein_partition") != protein_partition:
-                        continue
-                    # Cap decoys per target
-                    uid = row["uniprot_id"]
-                    if max_decoys_per_target:
-                        decoy_counts[uid] = decoy_counts.get(uid, 0) + 1
-                        if decoy_counts[uid] > max_decoys_per_target:
-                            continue
-
-                # Skip if no protein embeddings
                 uid = row["uniprot_id"]
+
                 if uid not in self.protein_embs:
                     continue
 
-                samples.append({
-                    "uniprot_id": uid,
-                    "smiles": row["smiles"],
-                    "is_active": 1 if is_active else 0,
-                })
+                if is_active:
+                    row_split = row.get(split_column, row["split"])
+                    row_thresh = row["similarity_threshold"]
+                    if row_split != split or row_thresh != similarity_threshold:
+                        continue
+                    target_proteins.add(uid)
+                    samples.append({
+                        "uniprot_id": uid,
+                        "smiles": row["smiles"],
+                        "is_active": 1,
+                    })
+                else:
+                    if include_decoys:
+                        decoy_rows.append(row)
+
+        # Pass 2: add decoys for target proteins
+        decoy_counts = {}
+        for row in decoy_rows:
+            uid = row["uniprot_id"]
+            if uid not in target_proteins:
+                continue
+            if max_decoys_per_target:
+                decoy_counts[uid] = decoy_counts.get(uid, 0) + 1
+                if decoy_counts[uid] > max_decoys_per_target:
+                    continue
+            samples.append({
+                "uniprot_id": uid,
+                "smiles": row["smiles"],
+                "is_active": 0,
+            })
 
         return samples
 

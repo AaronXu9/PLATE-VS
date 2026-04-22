@@ -134,6 +134,7 @@ def main():
     # Build datasets
     dc = config["data"]
     conformer_path = dc.get("conformer_path")
+    split_column = dc.get("split_column", "split")
     print("\nLoading train set...")
     train_dataset = PlateVSDataset(
         registry_path=dc["registry_path"],
@@ -145,6 +146,7 @@ def main():
         max_ligand_atoms=dc["max_ligand_atoms"],
         max_pocket_res=dc["max_pocket_residues"],
         conformer_path=conformer_path,
+        split_column=split_column,
     )
 
     print("Loading test set...")
@@ -158,6 +160,7 @@ def main():
         max_ligand_atoms=dc["max_ligand_atoms"],
         max_pocket_res=dc["max_pocket_residues"],
         conformer_path=conformer_path,
+        split_column=split_column,
     )
 
     bs = dc["batch_size"]

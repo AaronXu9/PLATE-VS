@@ -1,0 +1,16 @@
+{
+  "model": "GEMS_00AEPL",
+  "dataset": "plate_vs",
+  "split": "test",
+  "split_column": "protein_partition",
+  "similarity_threshold": "0p7",
+  "n_samples": 51315,
+  "n_failed": 103,
+  "metrics": {
+    "roc_auc": 0.478867,
+    "avg_precision": 0.809136,
+    "per_target_roc_auc_mean": 0.473652,
+    "per_target_roc_auc_std": 0.184927,
+    "n_targets_evaluated": 97
+  }
+}
