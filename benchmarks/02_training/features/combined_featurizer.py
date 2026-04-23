@@ -100,12 +100,12 @@ class CombinedFeaturizer:
 
         # Generate protein features
         print("Generating protein features...")
-        if protein_feature_type == 'protein_identifier':
+        if protein_feature_type in ('protein_identifier', 'esm2_protein'):
             # Fit if not already fitted
             if not self.protein_fitted and hasattr(self.protein_featurizer, 'fit'):
                 self.fit_protein_featurizer(protein_ids)
 
-            # protein_identifier uses random embeddings — no caching needed
+            # ID-based featurizers use per-protein lookups — no caching needed
             X_protein, invalid_protein = self.protein_featurizer.transform(
                 protein_ids, show_progress=show_progress
             )

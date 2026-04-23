@@ -1,0 +1,471 @@
+{
+  "evaluation": "real_inactives",
+  "active_threshold": 6.0,
+  "inactive_threshold": 5.0,
+  "checkpoint": "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/07_plate_vs_dl/checkpoints_soft/best_vs_model.pt",
+  "global_roc_auc": 0.524415,
+  "avg_precision": 0.925668,
+  "per_target_auc_mean": 0.502143,
+  "per_target_auc_std": 0.015578,
+  "per_target_auc_median": 0.5,
+  "n_targets": 76,
+  "n_samples": 28358,
+  "per_target_detail": [
+    {
+      "target": "O00408",
+      "auc": 0.5,
+      "n_active": 572,
+      "n_inactive": 5
+    },
+    {
+      "target": "O14757",
+      "auc": 0.5,
+      "n_active": 380,
+      "n_inactive": 10
+    },
+    {
+      "target": "O15496",
+      "auc": 0.5,
+      "n_active": 45,
+      "n_inactive": 5
+    },
+    {
+      "target": "O43318",
+      "auc": 0.5,
+      "n_active": 141,
+      "n_inactive": 2
+    },
+    {
+      "target": "O76074",
+      "auc": 0.5,
+      "n_active": 245,
+      "n_inactive": 13
+    },
+    {
+      "target": "P01116",
+      "auc": 0.5,
+      "n_active": 33,
+      "n_inactive": 1
+    },
+    {
+      "target": "P03952",
+      "auc": 0.5,
+      "n_active": 703,
+      "n_inactive": 88
+    },
+    {
+      "target": "P05413",
+      "auc": 0.5,
+      "n_active": 18,
+      "n_inactive": 12
+    },
+    {
+      "target": "P06276",
+      "auc": 0.5,
+      "n_active": 463,
+      "n_inactive": 253
+    },
+    {
+      "target": "P08246",
+      "auc": 0.5,
+      "n_active": 209,
+      "n_inactive": 22
+    },
+    {
+      "target": "P08254",
+      "auc": 0.5,
+      "n_active": 172,
+      "n_inactive": 55
+    },
+    {
+      "target": "P08581",
+      "auc": 0.5,
+      "n_active": 435,
+      "n_inactive": 7
+    },
+    {
+      "target": "P09211",
+      "auc": 0.5,
+      "n_active": 28,
+      "n_inactive": 16
+    },
+    {
+      "target": "P11362",
+      "auc": 0.5,
+      "n_active": 642,
+      "n_inactive": 18
+    },
+    {
+      "target": "P11473",
+      "auc": 0.5,
+      "n_active": 21,
+      "n_inactive": 24
+    },
+    {
+      "target": "P11802",
+      "auc": 0.5,
+      "n_active": 856,
+      "n_inactive": 2
+    },
+    {
+      "target": "P14625",
+      "auc": 0.5,
+      "n_active": 81,
+      "n_inactive": 8
+    },
+    {
+      "target": "P23946",
+      "auc": 0.5,
+      "n_active": 205,
+      "n_inactive": 1
+    },
+    {
+      "target": "P25025",
+      "auc": 0.5,
+      "n_active": 416,
+      "n_inactive": 6
+    },
+    {
+      "target": "P29466",
+      "auc": 0.5,
+      "n_active": 73,
+      "n_inactive": 27
+    },
+    {
+      "target": "P30838",
+      "auc": 0.5,
+      "n_active": 26,
+      "n_inactive": 6
+    },
+    {
+      "target": "P34896",
+      "auc": 0.5,
+      "n_active": 7,
+      "n_inactive": 21
+    },
+    {
+      "target": "P36507",
+      "auc": 0.5,
+      "n_active": 2,
+      "n_inactive": 1
+    },
+    {
+      "target": "P40261",
+      "auc": 0.5,
+      "n_active": 97,
+      "n_inactive": 23
+    },
+    {
+      "target": "P40763",
+      "auc": 0.5,
+      "n_active": 156,
+      "n_inactive": 129
+    },
+    {
+      "target": "P41146",
+      "auc": 0.5,
+      "n_active": 808,
+      "n_inactive": 5
+    },
+    {
+      "target": "P41180",
+      "auc": 0.5,
+      "n_active": 24,
+      "n_inactive": 2
+    },
+    {
+      "target": "P42262",
+      "auc": 0.5,
+      "n_active": 16,
+      "n_inactive": 20
+    },
+    {
+      "target": "P42336",
+      "auc": 0.5,
+      "n_active": 296,
+      "n_inactive": 22
+    },
+    {
+      "target": "P43235",
+      "auc": 0.5,
+      "n_active": 1007,
+      "n_inactive": 67
+    },
+    {
+      "target": "P43250",
+      "auc": 0.5,
+      "n_active": 40,
+      "n_inactive": 37
+    },
+    {
+      "target": "P43405",
+      "auc": 0.5,
+      "n_active": 1094,
+      "n_inactive": 2
+    },
+    {
+      "target": "P45984",
+      "auc": 0.5,
+      "n_active": 198,
+      "n_inactive": 3
+    },
+    {
+      "target": "P49336",
+      "auc": 0.5,
+      "n_active": 255,
+      "n_inactive": 1
+    },
+    {
+      "target": "P49759",
+      "auc": 0.5,
+      "n_active": 477,
+      "n_inactive": 1
+    },
+    {
+      "target": "P51955",
+      "auc": 0.5,
+      "n_active": 36,
+      "n_inactive": 10
+    },
+    {
+      "target": "P53350",
+      "auc": 0.5,
+      "n_active": 340,
+      "n_inactive": 56
+    },
+    {
+      "target": "P54132",
+      "auc": 0.5,
+      "n_active": 5,
+      "n_inactive": 15
+    },
+    {
+      "target": "P55055",
+      "auc": 0.5,
+      "n_active": 275,
+      "n_inactive": 29
+    },
+    {
+      "target": "P78368",
+      "auc": 0.5,
+      "n_active": 1,
+      "n_inactive": 2
+    },
+    {
+      "target": "P78536",
+      "auc": 0.5,
+      "n_active": 371,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q02790",
+      "auc": 0.5,
+      "n_active": 6,
+      "n_inactive": 21
+    },
+    {
+      "target": "Q03111",
+      "auc": 0.5,
+      "n_active": 71,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q05397",
+      "auc": 0.5,
+      "n_active": 602,
+      "n_inactive": 31
+    },
+    {
+      "target": "Q07820",
+      "auc": 0.5,
+      "n_active": 417,
+      "n_inactive": 114
+    },
+    {
+      "target": "Q07869",
+      "auc": 0.5,
+      "n_active": 172,
+      "n_inactive": 6
+    },
+    {
+      "target": "Q09472",
+      "auc": 0.5,
+      "n_active": 341,
+      "n_inactive": 28
+    },
+    {
+      "target": "Q12866",
+      "auc": 0.5,
+      "n_active": 771,
+      "n_inactive": 21
+    },
+    {
+      "target": "Q13490",
+      "auc": 0.5,
+      "n_active": 123,
+      "n_inactive": 4
+    },
+    {
+      "target": "Q14831",
+      "auc": 0.5,
+      "n_active": 7,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q16790",
+      "auc": 0.5,
+      "n_active": 1346,
+      "n_inactive": 25
+    },
+    {
+      "target": "Q6V1X1",
+      "auc": 0.5,
+      "n_active": 145,
+      "n_inactive": 141
+    },
+    {
+      "target": "Q86U86",
+      "auc": 0.5,
+      "n_active": 1,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q8NI77",
+      "auc": 0.5,
+      "n_active": 785,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q8TDQ0",
+      "auc": 0.5,
+      "n_active": 3,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q92769",
+      "auc": 0.5,
+      "n_active": 688,
+      "n_inactive": 40
+    },
+    {
+      "target": "Q93009",
+      "auc": 0.5,
+      "n_active": 249,
+      "n_inactive": 93
+    },
+    {
+      "target": "Q96EB6",
+      "auc": 0.5,
+      "n_active": 58,
+      "n_inactive": 144
+    },
+    {
+      "target": "Q96GD4",
+      "auc": 0.5,
+      "n_active": 429,
+      "n_inactive": 8
+    },
+    {
+      "target": "Q99683",
+      "auc": 0.5,
+      "n_active": 256,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q9BV86",
+      "auc": 0.5,
+      "n_active": 22,
+      "n_inactive": 17
+    },
+    {
+      "target": "Q9H244",
+      "auc": 0.5,
+      "n_active": 745,
+      "n_inactive": 19
+    },
+    {
+      "target": "Q9H8M2",
+      "auc": 0.5,
+      "n_active": 89,
+      "n_inactive": 5
+    },
+    {
+      "target": "Q9H9B1",
+      "auc": 0.5,
+      "n_active": 103,
+      "n_inactive": 9
+    },
+    {
+      "target": "Q9NRG4",
+      "auc": 0.5,
+      "n_active": 48,
+      "n_inactive": 11
+    },
+    {
+      "target": "Q9UBC3",
+      "auc": 0.5,
+      "n_active": 6,
+      "n_inactive": 22
+    },
+    {
+      "target": "Q9UGL1",
+      "auc": 0.5,
+      "n_active": 261,
+      "n_inactive": 27
+    },
+    {
+      "target": "Q9UIQ6",
+      "auc": 0.5,
+      "n_active": 259,
+      "n_inactive": 28
+    },
+    {
+      "target": "Q9UK32",
+      "auc": 0.5,
+      "n_active": 9,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q9Y463",
+      "auc": 0.5,
+      "n_active": 455,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q9Y5N1",
+      "auc": 0.5,
+      "n_active": 943,
+      "n_inactive": 5
+    },
+    {
+      "target": "Q9Y5Y4",
+      "auc": 0.5,
+      "n_active": 1197,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q9Y5Z0",
+      "auc": 0.5,
+      "n_active": 725,
+      "n_inactive": 5
+    },
+    {
+      "target": "Q9Y6F1",
+      "auc": 0.5,
+      "n_active": 7,
+      "n_inactive": 2
+    },
+    {
+      "target": "O94768",
+      "auc": 0.5288461538461539,
+      "n_active": 52,
+      "n_inactive": 17
+    },
+    {
+      "target": "P20618",
+      "auc": 0.634012539184953,
+      "n_active": 29,
+      "n_inactive": 22
+    }
+  ]
+}

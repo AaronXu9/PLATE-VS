@@ -338,18 +338,151 @@ class ProteinIdentifierFeaturizer:
             self.embeddings = self.embeddings / np.linalg.norm(self.embeddings, axis=1, keepdims=True)
 
 
+class ESM2ProteinFeaturizer:
+    """
+    Generate features from pretrained ESM2 per-residue embeddings.
+
+    Loads precomputed ESM2-t6 embeddings (shape: (n_residues, 320) per protein)
+    from an npz file and mean-pools over residues to produce a 320-dim vector
+    per protein. Drop-in replacement for ProteinIdentifierFeaturizer with
+    pretrained (not random) embeddings that generalize to novel proteins.
+    """
+
+    def __init__(self, embeddings_path: str,
+                 pooling: str = "mean"):
+        """
+        Args:
+            embeddings_path: Path to npz file with per-protein residue embeddings.
+            pooling: Pooling strategy over residues ('mean' or 'max').
+        """
+        self.embeddings_path = embeddings_path
+        self.pooling = pooling
+        self.embedding_dim = 320  # ESM2-t6
+        self.protein_embeddings: Dict[str, np.ndarray] = {}
+        self.protein_to_idx: Dict[str, int] = {}
+        self.n_proteins = 0
+        self.name = "esm2_protein"
+
+    def _pool(self, residue_embs: np.ndarray) -> np.ndarray:
+        if self.pooling == "mean":
+            return residue_embs.mean(axis=0).astype(np.float32)
+        elif self.pooling == "max":
+            return residue_embs.max(axis=0).astype(np.float32)
+        else:
+            raise ValueError(f"Unknown pooling: {self.pooling}")
+
+    def fit(self, protein_ids: List[str]) -> None:
+        """Load and pool ESM2 embeddings for all proteins in protein_ids."""
+        import os
+        # Try path as given; else try relative to common project roots
+        candidates = [
+            self.embeddings_path,
+            os.path.join(os.getcwd(), self.embeddings_path),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", self.embeddings_path)),
+        ]
+        resolved = next((p for p in candidates if os.path.exists(p)), None)
+        if resolved is None:
+            raise FileNotFoundError(
+                f"ESM2 embeddings not found. Tried: {candidates}"
+            )
+        self.embeddings_path = resolved
+
+        npz = np.load(self.embeddings_path, allow_pickle=False)
+        available = set(npz.files)
+        unique_proteins = sorted(set(protein_ids))
+
+        loaded, missing = 0, 0
+        for prot_id in unique_proteins:
+            if prot_id in available:
+                self.protein_embeddings[prot_id] = self._pool(npz[prot_id])
+                loaded += 1
+            else:
+                missing += 1
+
+        self.protein_to_idx = {p: i for i, p in enumerate(sorted(self.protein_embeddings.keys()))}
+        self.n_proteins = len(self.protein_to_idx)
+
+        print(f"Fitted ESM2 protein featurizer: {loaded} proteins loaded, {missing} missing")
+        print(f"Embedding dimension: {self.embedding_dim} (pooling={self.pooling})")
+
+    def transform(self, protein_ids: List[str], show_progress: bool = True) -> Tuple[np.ndarray, List[int]]:
+        """
+        Return mean-pooled ESM2 embeddings for each protein id.
+
+        Unknown proteins get zero vectors.
+        """
+        if not self.protein_embeddings:
+            raise ValueError("Featurizer not fitted. Call fit() first.")
+
+        unknown_indices = []
+        embeddings = np.zeros((len(protein_ids), self.embedding_dim), dtype=np.float32)
+
+        iterator = tqdm(enumerate(protein_ids), total=len(protein_ids),
+                        desc="ESM2 protein embeddings") if show_progress else enumerate(protein_ids)
+
+        for idx, prot_id in iterator:
+            emb = self.protein_embeddings.get(prot_id)
+            if emb is not None:
+                embeddings[idx] = emb
+            else:
+                unknown_indices.append(idx)
+
+        if unknown_indices:
+            print(f"Warning: {len(unknown_indices)} proteins not in ESM2 embeddings")
+
+        return embeddings, unknown_indices
+
+    def fit_transform(self, protein_ids: List[str], show_progress: bool = True) -> Tuple[np.ndarray, List[int]]:
+        self.fit(protein_ids)
+        return self.transform(protein_ids, show_progress)
+
+    def get_config(self) -> Dict[str, Any]:
+        return {
+            'type': 'esm2_protein',
+            'embedding_dim': self.embedding_dim,
+            'embeddings_path': self.embeddings_path,
+            'pooling': self.pooling,
+            'n_proteins': self.n_proteins,
+            'proteins': list(self.protein_to_idx.keys()),
+        }
+
+    def save_mapping(self, filepath: str) -> None:
+        """Save protein list + config (embeddings are re-loaded from npz at inference)."""
+        import json
+        with open(filepath, 'w') as f:
+            json.dump({
+                'protein_to_idx': self.protein_to_idx,
+                'embeddings_path': self.embeddings_path,
+                'pooling': self.pooling,
+                'embedding_dim': self.embedding_dim,
+            }, f, indent=2)
+
+    def load_mapping(self, filepath: str) -> None:
+        """Load protein list and refit from npz."""
+        import json
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+        self.protein_to_idx = data['protein_to_idx']
+        self.embeddings_path = data['embeddings_path']
+        self.pooling = data.get('pooling', 'mean')
+        self.embedding_dim = data['embedding_dim']
+        self.n_proteins = len(self.protein_to_idx)
+        # Reload embeddings for these proteins
+        self.fit(list(self.protein_to_idx.keys()))
+
+
 def get_protein_featurizer(config: Dict[str, Any]) -> Any:
     """
     Factory function to get the appropriate protein featurizer based on config.
-    
+
     Args:
         config: Configuration dictionary
-        
+
     Returns:
         Initialized protein featurizer object
     """
     feature_type = config.get('type', 'protein_identifier')
-    
+
     if feature_type == 'protein_sequence':
         return ProteinSequenceFeaturizer(
             include_composition=config.get('include_composition', True),
@@ -360,6 +493,12 @@ def get_protein_featurizer(config: Dict[str, Any]) -> Any:
         return ProteinIdentifierFeaturizer(
             embedding_dim=config.get('embedding_dim', 32),
             use_onehot=config.get('use_onehot', False)
+        )
+    elif feature_type == 'esm2_protein':
+        return ESM2ProteinFeaturizer(
+            embeddings_path=config.get('embeddings_path',
+                '../../data/plate_vs_protein_embeddings/esm2_embeddings.npz'),
+            pooling=config.get('pooling', 'mean'),
         )
     else:
         raise ValueError(f"Unknown protein feature type: {feature_type}")
