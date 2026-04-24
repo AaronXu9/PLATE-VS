@@ -1,0 +1,476 @@
+{
+  "model_dir": "benchmarks/02_training/trained_models/gb_esm2_hard",
+  "model_name": "gradient_boosting",
+  "protein_type": "esm2_protein",
+  "evaluation": "real_inactives",
+  "active_threshold": 6.0,
+  "inactive_threshold": 5.0,
+  "split_column": "protein_partition",
+  "split": "test",
+  "similarity_threshold": "0p7",
+  "n_samples": 28422,
+  "n_targets": 76,
+  "global_roc_auc": 0.31031,
+  "avg_precision": 0.892075,
+  "per_target_auc_mean": 0.391736,
+  "per_target_auc_std": 0.246729,
+  "per_target_auc_median": 0.399124,
+  "per_target_detail": [
+    {
+      "target": "P23946",
+      "auc": 0.0,
+      "n_active": 205,
+      "n_inactive": 1
+    },
+    {
+      "target": "P78368",
+      "auc": 0.0,
+      "n_active": 1,
+      "n_inactive": 2
+    },
+    {
+      "target": "P49759",
+      "auc": 0.010482180293501049,
+      "n_active": 477,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q13490",
+      "auc": 0.016917293233082706,
+      "n_active": 133,
+      "n_inactive": 4
+    },
+    {
+      "target": "Q99683",
+      "auc": 0.05859375,
+      "n_active": 256,
+      "n_inactive": 1
+    },
+    {
+      "target": "P11362",
+      "auc": 0.06195915541709934,
+      "n_active": 642,
+      "n_inactive": 18
+    },
+    {
+      "target": "P45984",
+      "auc": 0.07407407407407408,
+      "n_active": 198,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q09472",
+      "auc": 0.07593213238374527,
+      "n_active": 341,
+      "n_inactive": 28
+    },
+    {
+      "target": "P51955",
+      "auc": 0.08611111111111111,
+      "n_active": 36,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q9Y5N1",
+      "auc": 0.08769883351007424,
+      "n_active": 943,
+      "n_inactive": 5
+    },
+    {
+      "target": "P53350",
+      "auc": 0.09525510204081633,
+      "n_active": 350,
+      "n_inactive": 56
+    },
+    {
+      "target": "O43318",
+      "auc": 0.11702127659574468,
+      "n_active": 141,
+      "n_inactive": 2
+    },
+    {
+      "target": "P42262",
+      "auc": 0.11875000000000002,
+      "n_active": 16,
+      "n_inactive": 20
+    },
+    {
+      "target": "Q9Y5Z0",
+      "auc": 0.12,
+      "n_active": 725,
+      "n_inactive": 5
+    },
+    {
+      "target": "P29466",
+      "auc": 0.13749365804160324,
+      "n_active": 73,
+      "n_inactive": 27
+    },
+    {
+      "target": "Q9H244",
+      "auc": 0.13783115506888025,
+      "n_active": 745,
+      "n_inactive": 19
+    },
+    {
+      "target": "P49336",
+      "auc": 0.1411764705882353,
+      "n_active": 255,
+      "n_inactive": 1
+    },
+    {
+      "target": "O94768",
+      "auc": 0.1414027149321267,
+      "n_active": 52,
+      "n_inactive": 17
+    },
+    {
+      "target": "P09211",
+      "auc": 0.15625,
+      "n_active": 28,
+      "n_inactive": 16
+    },
+    {
+      "target": "P11473",
+      "auc": 0.16666666666666663,
+      "n_active": 21,
+      "n_inactive": 24
+    },
+    {
+      "target": "Q93009",
+      "auc": 0.1712009327633113,
+      "n_active": 249,
+      "n_inactive": 93
+    },
+    {
+      "target": "Q03111",
+      "auc": 0.17676056338028168,
+      "n_active": 71,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q05397",
+      "auc": 0.20378308862930017,
+      "n_active": 602,
+      "n_inactive": 31
+    },
+    {
+      "target": "Q9UBC3",
+      "auc": 0.23106060606060602,
+      "n_active": 6,
+      "n_inactive": 22
+    },
+    {
+      "target": "Q9UGL1",
+      "auc": 0.23499361430395913,
+      "n_active": 261,
+      "n_inactive": 27
+    },
+    {
+      "target": "P06276",
+      "auc": 0.23616387368852387,
+      "n_active": 463,
+      "n_inactive": 253
+    },
+    {
+      "target": "O14757",
+      "auc": 0.27999999999999997,
+      "n_active": 380,
+      "n_inactive": 10
+    },
+    {
+      "target": "Q9H9B1",
+      "auc": 0.30636461704422874,
+      "n_active": 103,
+      "n_inactive": 9
+    },
+    {
+      "target": "Q12866",
+      "auc": 0.3072077079859182,
+      "n_active": 771,
+      "n_inactive": 21
+    },
+    {
+      "target": "Q07820",
+      "auc": 0.3236119711042312,
+      "n_active": 425,
+      "n_inactive": 114
+    },
+    {
+      "target": "Q96EB6",
+      "auc": 0.3265079365079365,
+      "n_active": 63,
+      "n_inactive": 150
+    },
+    {
+      "target": "P40763",
+      "auc": 0.3479427549194991,
+      "n_active": 156,
+      "n_inactive": 129
+    },
+    {
+      "target": "P08581",
+      "auc": 0.348111658456486,
+      "n_active": 435,
+      "n_inactive": 7
+    },
+    {
+      "target": "Q9BV86",
+      "auc": 0.3542199488491049,
+      "n_active": 23,
+      "n_inactive": 17
+    },
+    {
+      "target": "P03952",
+      "auc": 0.38026154144575197,
+      "n_active": 703,
+      "n_inactive": 88
+    },
+    {
+      "target": "P43235",
+      "auc": 0.3810416635788288,
+      "n_active": 1007,
+      "n_inactive": 67
+    },
+    {
+      "target": "P43405",
+      "auc": 0.38482632541133455,
+      "n_active": 1094,
+      "n_inactive": 2
+    },
+    {
+      "target": "P78536",
+      "auc": 0.3982479784366576,
+      "n_active": 371,
+      "n_inactive": 10
+    },
+    {
+      "target": "P54132",
+      "auc": 0.4,
+      "n_active": 5,
+      "n_inactive": 15
+    },
+    {
+      "target": "P08254",
+      "auc": 0.4044140830267998,
+      "n_active": 173,
+      "n_inactive": 55
+    },
+    {
+      "target": "Q9Y5Y4",
+      "auc": 0.4066833751044277,
+      "n_active": 1197,
+      "n_inactive": 10
+    },
+    {
+      "target": "P34896",
+      "auc": 0.41156462585034004,
+      "n_active": 7,
+      "n_inactive": 21
+    },
+    {
+      "target": "Q9UK32",
+      "auc": 0.4444444444444444,
+      "n_active": 9,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q16790",
+      "auc": 0.454585798816568,
+      "n_active": 1352,
+      "n_inactive": 25
+    },
+    {
+      "target": "P41180",
+      "auc": 0.4583333333333333,
+      "n_active": 24,
+      "n_inactive": 2
+    },
+    {
+      "target": "P43250",
+      "auc": 0.46351351351351355,
+      "n_active": 40,
+      "n_inactive": 37
+    },
+    {
+      "target": "P42336",
+      "auc": 0.4643734643734644,
+      "n_active": 296,
+      "n_inactive": 22
+    },
+    {
+      "target": "Q9NRG4",
+      "auc": 0.46496212121212116,
+      "n_active": 48,
+      "n_inactive": 11
+    },
+    {
+      "target": "O15496",
+      "auc": 0.47555555555555556,
+      "n_active": 45,
+      "n_inactive": 5
+    },
+    {
+      "target": "P01116",
+      "auc": 0.48484848484848486,
+      "n_active": 33,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q6V1X1",
+      "auc": 0.4954267547077525,
+      "n_active": 145,
+      "n_inactive": 141
+    },
+    {
+      "target": "Q92769",
+      "auc": 0.5172351233671989,
+      "n_active": 689,
+      "n_inactive": 40
+    },
+    {
+      "target": "O76074",
+      "auc": 0.5205651491365777,
+      "n_active": 245,
+      "n_inactive": 13
+    },
+    {
+      "target": "P55055",
+      "auc": 0.5238871473354232,
+      "n_active": 275,
+      "n_inactive": 29
+    },
+    {
+      "target": "Q96GD4",
+      "auc": 0.5250582750582751,
+      "n_active": 429,
+      "n_inactive": 8
+    },
+    {
+      "target": "P05413",
+      "auc": 0.537037037037037,
+      "n_active": 18,
+      "n_inactive": 12
+    },
+    {
+      "target": "O00408",
+      "auc": 0.5430069930069931,
+      "n_active": 572,
+      "n_inactive": 5
+    },
+    {
+      "target": "Q14831",
+      "auc": 0.5476190476190477,
+      "n_active": 7,
+      "n_inactive": 3
+    },
+    {
+      "target": "P08246",
+      "auc": 0.5482683982683982,
+      "n_active": 210,
+      "n_inactive": 22
+    },
+    {
+      "target": "P14625",
+      "auc": 0.5817901234567902,
+      "n_active": 81,
+      "n_inactive": 8
+    },
+    {
+      "target": "P30838",
+      "auc": 0.5897435897435898,
+      "n_active": 26,
+      "n_inactive": 6
+    },
+    {
+      "target": "Q07869",
+      "auc": 0.6065891472868218,
+      "n_active": 172,
+      "n_inactive": 6
+    },
+    {
+      "target": "Q9Y6F1",
+      "auc": 0.6071428571428571,
+      "n_active": 7,
+      "n_inactive": 2
+    },
+    {
+      "target": "P11802",
+      "auc": 0.625,
+      "n_active": 856,
+      "n_inactive": 2
+    },
+    {
+      "target": "Q9H8M2",
+      "auc": 0.6314606741573033,
+      "n_active": 89,
+      "n_inactive": 5
+    },
+    {
+      "target": "P40261",
+      "auc": 0.6575526669654863,
+      "n_active": 97,
+      "n_inactive": 23
+    },
+    {
+      "target": "P25025",
+      "auc": 0.6642628205128205,
+      "n_active": 416,
+      "n_inactive": 6
+    },
+    {
+      "target": "Q8NI77",
+      "auc": 0.6802547770700637,
+      "n_active": 785,
+      "n_inactive": 1
+    },
+    {
+      "target": "Q02790",
+      "auc": 0.7380952380952381,
+      "n_active": 6,
+      "n_inactive": 21
+    },
+    {
+      "target": "P36507",
+      "auc": 0.75,
+      "n_active": 2,
+      "n_inactive": 1
+    },
+    {
+      "target": "P20618",
+      "auc": 0.8173981191222571,
+      "n_active": 29,
+      "n_inactive": 22
+    },
+    {
+      "target": "Q9Y463",
+      "auc": 0.8315018315018314,
+      "n_active": 455,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q9UIQ6",
+      "auc": 0.8486624379481522,
+      "n_active": 259,
+      "n_inactive": 28
+    },
+    {
+      "target": "P41146",
+      "auc": 0.8551640340218712,
+      "n_active": 823,
+      "n_inactive": 5
+    },
+    {
+      "target": "Q86U86",
+      "auc": 1.0,
+      "n_active": 1,
+      "n_inactive": 3
+    },
+    {
+      "target": "Q8TDQ0",
+      "auc": 1.0,
+      "n_active": 3,
+      "n_inactive": 1
+    }
+  ]
+}

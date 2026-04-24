@@ -1,0 +1,59 @@
+# Classical Gradient Boosting (sklearn HistGradientBoosting) with ESM2 embeddings
+# Backend: 'hist' (auto-fallback since xgboost/lightgbm not installed)
+
+model_type: "gradient_boosting"
+backend: "auto"
+
+hyperparameters:
+  n_estimators: 300          # HistGBM max_iter
+  max_depth: null
+  learning_rate: 0.05
+  max_leaf_nodes: 63
+  min_samples_leaf: 20
+  l2_regularization: 0.0
+  class_weight: 'balanced'
+  random_state: 42
+
+features:
+  type: "combined"
+
+  ligand:
+    type: "morgan_fingerprint"
+    radius: 2
+    n_bits: 2048
+    use_features: false
+
+  protein:
+    type: "esm2_protein"
+    embeddings_path: "data/plate_vs_protein_embeddings/esm2_embeddings.npz"
+    pooling: "mean"
+
+  concatenation_method: 'concat'
+
+  radius: 2
+  n_bits: 2048
+  use_features: false
+
+data:
+  similarity_threshold: '0p7'
+  include_decoys: true
+  include_protein_features: true
+  val_split: 0.2
+  test_split: 0.0
+  use_2d_split: true
+  protein_cluster_threshold: qcov_70
+  min_cluster_size_for_split: 3
+  protein_split_seed: 42
+  protein_split_ratios: [0.70, 0.15, 0.15]
+
+cross_validation: false
+cv_folds: 5
+
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+  - avg_precision
+  - mcc

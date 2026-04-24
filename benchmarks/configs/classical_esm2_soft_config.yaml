@@ -1,0 +1,60 @@
+# Classical RF with ESM2 embeddings — SOFT split
+# Uses registry_soft_split_aligned.csv where `split` column = protein_partition
+# (so 2D split logic filters correctly by the soft cluster assignment)
+
+model_type: "random_forest"
+
+hyperparameters:
+  n_estimators: 100
+  max_depth: null
+  min_samples_split: 2
+  min_samples_leaf: 1
+  max_features: 'sqrt'
+  bootstrap: true
+  random_state: 42
+  n_jobs: -1
+  class_weight: 'balanced'
+
+features:
+  type: "combined"
+
+  ligand:
+    type: "morgan_fingerprint"
+    radius: 2
+    n_bits: 2048
+    use_features: false
+
+  protein:
+    type: "esm2_protein"
+    embeddings_path: "data/plate_vs_protein_embeddings/esm2_embeddings.npz"
+    pooling: "mean"
+
+  concatenation_method: 'concat'
+
+  radius: 2
+  n_bits: 2048
+  use_features: false
+
+data:
+  similarity_threshold: '0p7'
+  include_decoys: true
+  include_protein_features: true
+  val_split: 0.2
+  test_split: 0.0
+  use_2d_split: true
+  protein_cluster_threshold: qcov_70
+  min_cluster_size_for_split: 3
+  protein_split_seed: 42
+  protein_split_ratios: [0.70, 0.15, 0.15]
+
+cross_validation: false
+cv_folds: 5
+
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+  - avg_precision
+  - mcc
