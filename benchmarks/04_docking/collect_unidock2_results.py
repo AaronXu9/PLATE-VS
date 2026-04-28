@@ -124,6 +124,7 @@ def main():
         m["status"] = run_status
         m["elapsed_s"] = runs[u].get("elapsed_s", 0)
         m["n_chunks_failed"] = runs[u].get("n_chunks_failed", 0)
+        m["n_dropped"] = runs[u].get("n_dropped", 0)
         per_target[u] = m
         pooled_y.extend([r["is_active"] for r in rows])
         pooled_s.extend([-r["score"] for r in rows])

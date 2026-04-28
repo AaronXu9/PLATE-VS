@@ -35,13 +35,15 @@ def main():
 
     g = json.loads(Path(args.gnina_summary).read_text())
     u = json.loads(Path(args.unidock2_summary).read_text())
-    g_per = g.get("per_target", g)
+    # gnina ships per-target under "per_target_metrics" with keys
+    # avg_precision/f1_score; unidock2 collector uses per_target with ap/f1.
+    g_per = g.get("per_target_metrics", g.get("per_target", {}))
     u_per = u.get("per_target", u)
 
     rows = []
     for uniprot in sorted(set(g_per) | set(u_per)):
-        gm = g_per.get(uniprot, {})
-        um = u_per.get(uniprot, {})
+        gm = g_per.get(uniprot, {}) if isinstance(g_per.get(uniprot), dict) else {}
+        um = u_per.get(uniprot, {}) if isinstance(u_per.get(uniprot), dict) else {}
         rows.append(
             {
                 "uniprot": uniprot,
@@ -49,31 +51,46 @@ def main():
                 "n_decoys": gm.get("n_decoys") or um.get("n_decoys"),
                 "gnina_roc_auc": gm.get("roc_auc"),
                 "unidock2_roc_auc": um.get("roc_auc"),
-                "gnina_ap": gm.get("ap"),
+                "gnina_ap": gm.get("avg_precision"),
                 "unidock2_ap": um.get("ap"),
-                "gnina_ef1pct": gm.get("ef1pct"),
                 "unidock2_ef1pct": um.get("ef1pct"),
-                "gnina_elapsed_s": gm.get("elapsed_s"),
-                "unidock2_elapsed_s": um.get("elapsed_s"),
                 "unidock2_status": um.get("status"),
-                "unidock2_dropped": um.get("n_chunks_failed", um.get("n_dropped", 0)),
+                "unidock2_dropped": um.get("n_dropped", um.get("n_chunks_failed", 0)),
+                "unidock2_elapsed_s": um.get("elapsed_s"),
             }
         )
     df = pd.DataFrame(rows)
     df.to_csv(args.out_csv, index=False)
 
     aggregate = {
-        "gnina": g.get("aggregate", g.get("weighted", {})),
+        "gnina": {
+            "test_metrics": g.get("training_history", {}).get("test_metrics", {}),
+            "global_pooled_metrics": g.get("global_pooled_metrics", {}),
+        },
         "unidock2": u.get("aggregate", {}),
     }
-    body = (
+
+    cols = list(df.columns)
+
+    def _fmt(v):
+        if v is None:
+            return "—"
+        if isinstance(v, float):
+            return f"{v:.3f}"
+        return str(v)
+
+    header = "| " + " | ".join(cols) + " |"
+    sep = "| " + " | ".join("---" for _ in cols) + " |"
+    body_rows = ["| " + " | ".join(_fmt(r[c]) for c in cols) + " |" for r in df.to_dict("records")]
+    table_md = "\n".join([header, sep] + body_rows)
+
+    Path(args.out_md).write_text(
         "# GNINA vs UniDock2 — 15-target VS comparison\n\n"
-        + df.to_markdown(index=False, floatfmt=".3f")
+        + table_md
         + "\n\n## Aggregate\n\n```json\n"
         + json.dumps(aggregate, indent=2)
         + "\n```\n"
     )
-    Path(args.out_md).write_text(body)
     print(f"Wrote {args.out_csv}")
     print(f"Wrote {args.out_md}")
 
