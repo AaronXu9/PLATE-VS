@@ -4,7 +4,7 @@
 data:
   registry_path: "../../../training_data_full/registry_soft_split.csv"
   protein_emb_path: "../../../data/plate_vs_protein_embeddings/esm2_embeddings.npz"
-  conformer_path: "../../../data/plate_vs_conformers/conformers.pkl"
+  conformer_path: "../../../data/plate_vs_conformers/conformers_full.pkl"
   similarity_threshold: "0p7"
   split_column: "protein_partition"    # soft split uses protein_partition, not split
   include_decoys: true

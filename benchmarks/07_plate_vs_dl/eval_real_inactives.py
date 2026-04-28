@@ -38,6 +38,7 @@ sys.path.insert(0, BA_DIR)
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from model.vs_model import VirtualScreeningModel
+from evaluation import enrichment_factor, bedroc
 
 import importlib.util
 _collate_spec = importlib.util.spec_from_file_location(
@@ -229,8 +230,10 @@ def main():
     # Global metrics
     roc_auc = roc_auc_score(labels, scores)
     ap = average_precision_score(labels, scores)
+    ef_global = enrichment_factor(labels, scores)
+    bedroc_global = bedroc(labels, scores)
 
-    # Per-target metrics
+    # Per-target metrics (AUC + EF at 1% / 5%)
     unique_uids = np.unique(uids)
     per_target = []
     for uid in unique_uids:
@@ -239,22 +242,37 @@ def main():
         if len(np.unique(y)) < 2:
             continue
         auc = roc_auc_score(y, scores[mask])
+        ef_t = enrichment_factor(y, scores[mask], (1.0, 5.0))
         n_a = int(y.sum())
         n_i = int(len(y) - y.sum())
-        per_target.append({"target": uid, "auc": auc, "n_active": n_a, "n_inactive": n_i})
+        per_target.append({
+            "target": uid,
+            "auc": auc,
+            "ef_1pct": ef_t.get("ef_1pct"),
+            "ef_5pct": ef_t.get("ef_5pct"),
+            "n_active": n_a,
+            "n_inactive": n_i,
+        })
 
     pt_aucs = [t["auc"] for t in per_target]
     pt_mean = np.mean(pt_aucs)
     pt_std = np.std(pt_aucs)
     pt_median = np.median(pt_aucs)
+    pt_ef1 = [t["ef_1pct"] for t in per_target if t["ef_1pct"] is not None]
+    pt_ef5 = [t["ef_5pct"] for t in per_target if t["ef_5pct"] is not None]
+    pt_ef1_mean = float(np.mean(pt_ef1)) if pt_ef1 else float("nan")
+    pt_ef5_mean = float(np.mean(pt_ef5)) if pt_ef5 else float("nan")
 
     print(f"\n{'='*60}")
     print(f"  Real Inactive Evaluation (active >= {args.active_threshold}, inactive < {args.inactive_threshold})")
     print(f"{'='*60}")
     print(f"  Global ROC-AUC:       {roc_auc:.4f}")
     print(f"  Avg Precision:        {ap:.4f}")
+    print(f"  Global EF1%/5%:       {ef_global.get('ef_1pct', float('nan'))} / {ef_global.get('ef_5pct', float('nan'))}")
+    print(f"  Global BEDROC a=20:   {bedroc_global.get('bedroc_a20', float('nan'))}")
     print(f"  Per-target AUC mean:  {pt_mean:.4f} +/- {pt_std:.4f}")
     print(f"  Per-target AUC median:{pt_median:.4f}")
+    print(f"  Per-target EF1%/5%:   {pt_ef1_mean:.4f} / {pt_ef5_mean:.4f}")
     print(f"  Targets evaluated:    {len(per_target)}")
     print(f"  Total samples:        {len(scores)} ({int(labels.sum())} active, {int(len(labels)-labels.sum())} inactive)")
 
@@ -275,9 +293,13 @@ def main():
         "checkpoint": args.checkpoint,
         "global_roc_auc": round(roc_auc, 6),
         "avg_precision": round(ap, 6),
+        **ef_global,
+        **bedroc_global,
         "per_target_auc_mean": round(pt_mean, 6),
         "per_target_auc_std": round(pt_std, 6),
         "per_target_auc_median": round(pt_median, 6),
+        "per_target_ef_1pct_mean": round(pt_ef1_mean, 6) if pt_ef1 else None,
+        "per_target_ef_5pct_mean": round(pt_ef5_mean, 6) if pt_ef5 else None,
         "n_targets": len(per_target),
         "n_samples": len(scores),
         "per_target_detail": per_target,

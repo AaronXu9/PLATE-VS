@@ -4,7 +4,7 @@
 data:
   registry_path: "../../../training_data_full/registry_2d_split.csv"
   protein_emb_path: "../../../data/plate_vs_protein_embeddings/esm2_embeddings.npz"
-  conformer_path: "../../../data/plate_vs_conformers/conformers.pkl"
+  conformer_path: "../../../data/plate_vs_conformers/conformers_full.pkl"
   similarity_threshold: "0p7"
   include_decoys: true
   max_decoys_per_target: 100      # cap decoys for training efficiency

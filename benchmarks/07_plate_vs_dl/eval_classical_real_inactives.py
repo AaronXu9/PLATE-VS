@@ -19,6 +19,7 @@ import argparse
 import csv
 import json
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +28,9 @@ from rdkit.Chem import AllChem
 from sklearn.metrics import roc_auc_score, average_precision_score
 
 RDLogger.DisableLog("rdApp.*")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation import enrichment_factor, bedroc
 
 
 def morgan_fp(smiles: str, radius: int = 2, n_bits: int = 2048) -> np.ndarray | None:
@@ -198,6 +202,8 @@ def main():
     # Metrics
     roc = roc_auc_score(y, scores)
     ap = average_precision_score(y, scores)
+    ef_global = enrichment_factor(y, scores)
+    bedroc_global = bedroc(y, scores)
 
     per_target = []
     for uid in np.unique(uids):
@@ -205,9 +211,12 @@ def main():
         yy = y[mask]
         if len(np.unique(yy)) < 2:
             continue
+        ef_t = enrichment_factor(yy, scores[mask], (1.0, 5.0))
         per_target.append({
             "target": uid,
             "auc": float(roc_auc_score(yy, scores[mask])),
+            "ef_1pct": ef_t.get("ef_1pct"),
+            "ef_5pct": ef_t.get("ef_5pct"),
             "n_active": int(yy.sum()),
             "n_inactive": int(len(yy) - yy.sum()),
         })
@@ -215,6 +224,10 @@ def main():
     pt_mean = float(np.mean(pt_aucs)) if pt_aucs else float("nan")
     pt_std = float(np.std(pt_aucs)) if pt_aucs else float("nan")
     pt_med = float(np.median(pt_aucs)) if pt_aucs else float("nan")
+    pt_ef1 = [t["ef_1pct"] for t in per_target if t["ef_1pct"] is not None]
+    pt_ef5 = [t["ef_5pct"] for t in per_target if t["ef_5pct"] is not None]
+    pt_ef1_mean = float(np.mean(pt_ef1)) if pt_ef1 else float("nan")
+    pt_ef5_mean = float(np.mean(pt_ef5)) if pt_ef5 else float("nan")
 
     print(f"\n{'='*60}")
     print(f"  Classical ({args.model_name}, {protein_type}) on real inactives")
@@ -222,8 +235,11 @@ def main():
     print(f"{'='*60}")
     print(f"  Global ROC-AUC:       {roc:.4f}")
     print(f"  Avg Precision:        {ap:.4f}")
+    print(f"  Global EF1%/5%:       {ef_global.get('ef_1pct', float('nan'))} / {ef_global.get('ef_5pct', float('nan'))}")
+    print(f"  Global BEDROC a=20:   {bedroc_global.get('bedroc_a20', float('nan'))}")
     print(f"  Per-target AUC mean:  {pt_mean:.4f} +/- {pt_std:.4f}")
     print(f"  Per-target AUC median:{pt_med:.4f}")
+    print(f"  Per-target EF1%/5%:   {pt_ef1_mean:.4f} / {pt_ef5_mean:.4f}")
     print(f"  Targets evaluated:    {len(per_target)}")
     print(f"  Total samples:        {len(y)} ({int(y.sum())} active, {int(len(y)-y.sum())} inactive)")
 
@@ -250,9 +266,13 @@ def main():
         "n_targets": len(per_target),
         "global_roc_auc": round(roc, 6),
         "avg_precision": round(ap, 6),
+        **ef_global,
+        **bedroc_global,
         "per_target_auc_mean": round(pt_mean, 6),
         "per_target_auc_std": round(pt_std, 6),
         "per_target_auc_median": round(pt_med, 6),
+        "per_target_ef_1pct_mean": round(pt_ef1_mean, 6) if pt_ef1 else None,
+        "per_target_ef_5pct_mean": round(pt_ef5_mean, 6) if pt_ef5 else None,
         "per_target_detail": per_target,
     }
     out_path = Path(args.output) if args.output else (

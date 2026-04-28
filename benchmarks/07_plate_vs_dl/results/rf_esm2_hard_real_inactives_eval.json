@@ -12,463 +12,629 @@
   "n_targets": 76,
   "global_roc_auc": 0.344074,
   "avg_precision": 0.898743,
+  "ef_0.1pct": 0.8819,
+  "ef_0.2pct": 0.8852,
+  "ef_0.5pct": 0.8846,
+  "ef_1pct": 0.843,
+  "ef_2pct": 0.9205,
+  "ef_5pct": 0.921,
+  "ef_10pct": 0.9149,
+  "ef_15pct": 0.9066,
+  "ef_20pct": 0.9064,
+  "bedroc_a20": 0.8018,
+  "bedroc_a80": 0.8394,
+  "bedroc_a160": 0.8198,
   "per_target_auc_mean": 0.403318,
   "per_target_auc_std": 0.185379,
   "per_target_auc_median": 0.409995,
+  "per_target_ef_1pct_mean": 0.879126,
+  "per_target_ef_5pct_mean": 0.904409,
   "per_target_detail": [
     {
       "target": "P23946",
       "auc": 0.03902439024390244,
+      "ef_1pct": 1.0049,
+      "ef_5pct": 0.9044,
       "n_active": 205,
       "n_inactive": 1
     },
     {
       "target": "Q13490",
       "auc": 0.041353383458646614,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.7358,
       "n_active": 133,
       "n_inactive": 4
     },
     {
       "target": "P49336",
       "auc": 0.043137254901960784,
+      "ef_1pct": 1.0039,
+      "ef_5pct": 0.9267,
       "n_active": 255,
       "n_inactive": 1
     },
     {
       "target": "Q09472",
       "auc": 0.06933389191453707,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.7214,
       "n_active": 341,
       "n_inactive": 28
     },
     {
       "target": "Q9Y5Z0",
       "auc": 0.06951724137931034,
+      "ef_1pct": 0.7192,
+      "ef_5pct": 0.895,
       "n_active": 725,
       "n_inactive": 5
     },
     {
       "target": "P11362",
       "auc": 0.0835496711664936,
+      "ef_1pct": 0.8812,
+      "ef_5pct": 0.7788,
       "n_active": 642,
       "n_inactive": 18
     },
     {
       "target": "O43318",
       "auc": 0.13829787234042554,
+      "ef_1pct": 1.0142,
+      "ef_5pct": 1.0142,
       "n_active": 141,
       "n_inactive": 2
     },
     {
       "target": "P49759",
       "auc": 0.14675052410901468,
+      "ef_1pct": 1.0021,
+      "ef_5pct": 1.0021,
       "n_active": 477,
       "n_inactive": 1
     },
     {
       "target": "Q9NRG4",
       "auc": 0.1553030303030303,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.4097,
       "n_active": 48,
       "n_inactive": 11
     },
     {
       "target": "P09211",
       "auc": 0.1607142857142857,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 28,
       "n_inactive": 16
     },
     {
       "target": "P11802",
       "auc": 0.16822429906542055,
+      "ef_1pct": 1.0023,
+      "ef_5pct": 1.0023,
       "n_active": 856,
       "n_inactive": 2
     },
     {
       "target": "P53350",
       "auc": 0.1685714285714286,
+      "ef_1pct": 1.16,
+      "ef_5pct": 1.16,
       "n_active": 350,
       "n_inactive": 56
     },
     {
       "target": "O94768",
       "auc": 0.16968325791855204,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 52,
       "n_inactive": 17
     },
     {
       "target": "P11473",
       "auc": 0.1746031746031746,
+      "ef_1pct": 2.1429,
+      "ef_5pct": 2.1429,
       "n_active": 21,
       "n_inactive": 24
     },
     {
       "target": "P29466",
       "auc": 0.2034500253678336,
+      "ef_1pct": 0.0,
+      "ef_5pct": 1.0959,
       "n_active": 73,
       "n_inactive": 27
     },
     {
       "target": "P36507",
       "auc": 0.25,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 2,
       "n_inactive": 1
     },
     {
       "target": "Q9H244",
       "auc": 0.27036382903567646,
+      "ef_1pct": 0.8973,
+      "ef_5pct": 0.9445,
       "n_active": 745,
       "n_inactive": 19
     },
     {
       "target": "P41180",
       "auc": 0.27083333333333337,
+      "ef_1pct": 1.0833,
+      "ef_5pct": 1.0833,
       "n_active": 24,
       "n_inactive": 2
     },
     {
       "target": "P51955",
       "auc": 0.275,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 36,
       "n_inactive": 10
     },
     {
       "target": "Q93009",
       "auc": 0.29192036965064555,
+      "ef_1pct": 0.9157,
+      "ef_5pct": 0.2424,
       "n_active": 249,
       "n_inactive": 93
     },
     {
       "target": "P06276",
       "auc": 0.3021239723747001,
+      "ef_1pct": 0.8837,
+      "ef_5pct": 1.1169,
       "n_active": 463,
       "n_inactive": 253
     },
     {
       "target": "P03952",
       "auc": 0.32702379412905724,
+      "ef_1pct": 0.7032,
+      "ef_5pct": 0.8439,
       "n_active": 703,
       "n_inactive": 88
     },
     {
       "target": "O14757",
       "auc": 0.32894736842105265,
+      "ef_1pct": 1.0263,
+      "ef_5pct": 0.975,
       "n_active": 380,
       "n_inactive": 10
     },
     {
       "target": "Q96EB6",
       "auc": 0.3295238095238095,
+      "ef_1pct": 3.381,
+      "ef_5pct": 1.8442,
       "n_active": 63,
       "n_inactive": 150
     },
     {
       "target": "Q8TDQ0",
       "auc": 0.3333333333333333,
+      "ef_1pct": 1.3333,
+      "ef_5pct": 1.3333,
       "n_active": 3,
       "n_inactive": 1
     },
     {
       "target": "Q86U86",
       "auc": 0.33333333333333337,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 1,
       "n_inactive": 3
     },
     {
       "target": "Q05397",
       "auc": 0.33849533812024435,
+      "ef_1pct": 1.0515,
+      "ef_5pct": 1.0515,
       "n_active": 602,
       "n_inactive": 31
     },
     {
       "target": "Q9UBC3",
       "auc": 0.3409090909090909,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 6,
       "n_inactive": 22
     },
     {
       "target": "Q03111",
       "auc": 0.3492957746478873,
+      "ef_1pct": 1.1408,
+      "ef_5pct": 1.1408,
       "n_active": 71,
       "n_inactive": 10
     },
     {
       "target": "Q9BV86",
       "auc": 0.3734015345268542,
+      "ef_1pct": 1.7391,
+      "ef_5pct": 1.7391,
       "n_active": 23,
       "n_inactive": 17
     },
     {
       "target": "Q9UGL1",
       "auc": 0.3843479494820491,
+      "ef_1pct": 1.1034,
+      "ef_5pct": 1.0246,
       "n_active": 261,
       "n_inactive": 27
     },
     {
       "target": "P54132",
       "auc": 0.3866666666666667,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 5,
       "n_inactive": 15
     },
     {
       "target": "Q16790",
       "auc": 0.38775147928994086,
+      "ef_1pct": 1.0185,
+      "ef_5pct": 0.989,
       "n_active": 1352,
       "n_inactive": 25
     },
     {
       "target": "Q96GD4",
       "auc": 0.3923368298368298,
+      "ef_1pct": 1.0186,
+      "ef_5pct": 1.0186,
       "n_active": 429,
       "n_inactive": 8
     },
     {
       "target": "P08246",
       "auc": 0.39761904761904765,
+      "ef_1pct": 1.1048,
+      "ef_5pct": 0.9206,
       "n_active": 210,
       "n_inactive": 22
     },
     {
       "target": "P08254",
       "auc": 0.40220704151339987,
+      "ef_1pct": 1.3179,
+      "ef_5pct": 0.9585,
       "n_active": 173,
       "n_inactive": 55
     },
     {
       "target": "P14625",
       "auc": 0.4027777777777778,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.8241,
       "n_active": 81,
       "n_inactive": 8
     },
     {
       "target": "O76074",
       "auc": 0.4080062794348508,
+      "ef_1pct": 1.0531,
+      "ef_5pct": 0.9721,
       "n_active": 245,
       "n_inactive": 13
     },
     {
       "target": "Q6V1X1",
       "auc": 0.4119833700171191,
+      "ef_1pct": 1.9724,
+      "ef_5pct": 1.8315,
       "n_active": 145,
       "n_inactive": 141
     },
     {
       "target": "P42336",
       "auc": 0.4369625307125307,
+      "ef_1pct": 1.0743,
+      "ef_5pct": 1.0743,
       "n_active": 296,
       "n_inactive": 22
     },
     {
       "target": "P43235",
       "auc": 0.44578991833286397,
+      "ef_1pct": 0.9696,
+      "ef_5pct": 1.0073,
       "n_active": 1007,
       "n_inactive": 67
     },
     {
       "target": "Q07820",
       "auc": 0.4485758513931889,
+      "ef_1pct": 1.2682,
+      "ef_5pct": 0.9864,
       "n_active": 425,
       "n_inactive": 114
     },
     {
       "target": "Q9Y463",
       "auc": 0.4527472527472528,
+      "ef_1pct": 1.0066,
+      "ef_5pct": 1.0066,
       "n_active": 455,
       "n_inactive": 3
     },
     {
       "target": "Q9H9B1",
       "auc": 0.4541531823085221,
+      "ef_1pct": 1.0874,
+      "ef_5pct": 0.9061,
       "n_active": 103,
       "n_inactive": 9
     },
     {
       "target": "P42262",
       "auc": 0.45937500000000003,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 16,
       "n_inactive": 20
     },
     {
       "target": "Q9Y6F1",
       "auc": 0.4642857142857143,
+      "ef_1pct": 1.2857,
+      "ef_5pct": 1.2857,
       "n_active": 7,
       "n_inactive": 2
     },
     {
       "target": "Q9Y5N1",
       "auc": 0.47317073170731705,
+      "ef_1pct": 1.0053,
+      "ef_5pct": 1.0053,
       "n_active": 943,
       "n_inactive": 5
     },
     {
       "target": "Q9Y5Y4",
       "auc": 0.4760233918128655,
+      "ef_1pct": 1.0084,
+      "ef_5pct": 1.0084,
       "n_active": 1197,
       "n_inactive": 10
     },
     {
       "target": "P34896",
       "auc": 0.47619047619047616,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 7,
       "n_inactive": 21
     },
     {
       "target": "Q02790",
       "auc": 0.47619047619047616,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 6,
       "n_inactive": 21
     },
     {
       "target": "P55055",
       "auc": 0.47924764890282123,
+      "ef_1pct": 0.737,
+      "ef_5pct": 0.9581,
       "n_active": 275,
       "n_inactive": 29
     },
     {
       "target": "P40763",
       "auc": 0.4807195388590737,
+      "ef_1pct": 0.0,
+      "ef_5pct": 1.1745,
       "n_active": 156,
       "n_inactive": 129
     },
     {
       "target": "P45984",
       "auc": 0.4848484848484849,
+      "ef_1pct": 1.0152,
+      "ef_5pct": 1.0152,
       "n_active": 198,
       "n_inactive": 3
     },
     {
       "target": "Q12866",
       "auc": 0.49870298313878075,
+      "ef_1pct": 1.0272,
+      "ef_5pct": 1.0272,
       "n_active": 771,
       "n_inactive": 21
     },
     {
       "target": "P78368",
       "auc": 0.5,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.0,
       "n_active": 1,
       "n_inactive": 2
     },
     {
       "target": "P43250",
       "auc": 0.5114864864864865,
+      "ef_1pct": 0.0,
+      "ef_5pct": 0.4813,
       "n_active": 40,
       "n_inactive": 37
     },
     {
       "target": "P01116",
       "auc": 0.5151515151515151,
+      "ef_1pct": 1.0303,
+      "ef_5pct": 1.0303,
       "n_active": 33,
       "n_inactive": 1
     },
     {
       "target": "Q07869",
       "auc": 0.5242248062015504,
+      "ef_1pct": 1.0349,
+      "ef_5pct": 0.9199,
       "n_active": 172,
       "n_inactive": 6
     },
     {
       "target": "P30838",
       "auc": 0.5352564102564104,
+      "ef_1pct": 1.2308,
+      "ef_5pct": 1.2308,
       "n_active": 26,
       "n_inactive": 6
     },
     {
       "target": "Q99683",
       "auc": 0.5390625,
+      "ef_1pct": 1.0039,
+      "ef_5pct": 1.0039,
       "n_active": 256,
       "n_inactive": 1
     },
     {
       "target": "P78536",
       "auc": 0.5477088948787062,
+      "ef_1pct": 0.7702,
+      "ef_5pct": 0.9729,
       "n_active": 371,
       "n_inactive": 10
     },
     {
       "target": "Q9UK32",
       "auc": 0.5555555555555556,
+      "ef_1pct": 1.1111,
+      "ef_5pct": 1.1111,
       "n_active": 9,
       "n_inactive": 1
     },
     {
       "target": "Q9H8M2",
       "auc": 0.5617977528089888,
+      "ef_1pct": 1.0562,
+      "ef_5pct": 1.0562,
       "n_active": 89,
       "n_inactive": 5
     },
     {
       "target": "Q14831",
       "auc": 0.5714285714285714,
+      "ef_1pct": 1.4286,
+      "ef_5pct": 1.4286,
       "n_active": 7,
       "n_inactive": 3
     },
     {
       "target": "P43405",
       "auc": 0.5802102376599634,
+      "ef_1pct": 1.0018,
+      "ef_5pct": 1.0018,
       "n_active": 1094,
       "n_inactive": 2
     },
     {
       "target": "Q92769",
       "auc": 0.6083091436865021,
+      "ef_1pct": 1.0581,
+      "ef_5pct": 1.0581,
       "n_active": 689,
       "n_inactive": 40
     },
     {
       "target": "P08581",
       "auc": 0.6310344827586207,
+      "ef_1pct": 1.0161,
+      "ef_5pct": 1.0161,
       "n_active": 435,
       "n_inactive": 7
     },
     {
       "target": "P40261",
       "auc": 0.6326759300761992,
+      "ef_1pct": 1.2371,
+      "ef_5pct": 1.2371,
       "n_active": 97,
       "n_inactive": 23
     },
     {
       "target": "P05413",
       "auc": 0.6388888888888888,
+      "ef_1pct": 1.6667,
+      "ef_5pct": 1.6667,
       "n_active": 18,
       "n_inactive": 12
     },
     {
       "target": "O00408",
       "auc": 0.638986013986014,
+      "ef_1pct": 1.0087,
+      "ef_5pct": 1.0087,
       "n_active": 572,
       "n_inactive": 5
     },
     {
       "target": "O15496",
       "auc": 0.6666666666666666,
+      "ef_1pct": 1.1111,
+      "ef_5pct": 1.1111,
       "n_active": 45,
       "n_inactive": 5
     },
     {
       "target": "P25025",
       "auc": 0.6750801282051281,
+      "ef_1pct": 1.0144,
+      "ef_5pct": 1.0144,
       "n_active": 416,
       "n_inactive": 6
     },
     {
       "target": "Q9UIQ6",
       "auc": 0.6830529509100938,
+      "ef_1pct": 1.1081,
+      "ef_5pct": 1.1081,
       "n_active": 259,
       "n_inactive": 28
     },
     {
       "target": "P41146",
       "auc": 0.7549210206561361,
+      "ef_1pct": 1.0061,
+      "ef_5pct": 1.0061,
       "n_active": 823,
       "n_inactive": 5
     },
     {
       "target": "P20618",
       "auc": 0.7915360501567399,
+      "ef_1pct": 1.7586,
+      "ef_5pct": 1.1724,
       "n_active": 29,
       "n_inactive": 22
     },
     {
       "target": "Q8NI77",
       "auc": 0.8624203821656051,
+      "ef_1pct": 1.0013,
+      "ef_5pct": 1.0013,
       "n_active": 785,
       "n_inactive": 1
     }
