@@ -44,6 +44,48 @@ def _write_target_yaml(
     cfg_path.write_text(body)
 
 
+def _run_unidock2_once(
+    receptor_pdb: Path,
+    batch_lines: list[str],
+    box: dict,
+    out_sdf: Path,
+    target_yaml: Path,
+    log_handle,
+    ud_cfg: dict,
+    timeout_s: int,
+) -> tuple[int, float]:
+    """Single UniDock2 invocation on a batch of ligands. Returns (rc, elapsed)."""
+    tmp_batch = out_sdf.parent / f"{out_sdf.stem}_batch.txt"
+    tmp_batch.write_text("\n".join(batch_lines) + "\n")
+    cx, cy, cz = box["center"]
+    cmd = [
+        "conda", "run", "-n", ud_cfg["conda_env"], "--no-capture-output",
+        "unidock2", "docking",
+        "-r", str(receptor_pdb),
+        "-lb", str(tmp_batch),
+        "-c", f"{cx}", f"{cy}", f"{cz}",
+        "-cf", str(target_yaml),
+        "-o", str(out_sdf),
+    ]
+    start = time.time()
+    try:
+        log_handle.write(f"\n>>> UniDock2 invocation on {len(batch_lines)} ligands\n")
+        log_handle.flush()
+        res = subprocess.run(cmd, stdout=log_handle, stderr=subprocess.STDOUT, timeout=timeout_s)
+        return res.returncode, time.time() - start
+    except subprocess.TimeoutExpired:
+        return 124, time.time() - start
+
+
+def _concat_sdf(parts: list[Path], dest: Path) -> None:
+    with open(dest, "w") as out:
+        for p in parts:
+            if not p.exists():
+                continue
+            with open(p) as f:
+                out.write(f.read())
+
+
 def dock_target(
     uniprot: str,
     receptor_pdb: Path,
@@ -53,6 +95,12 @@ def dock_target(
     log_file: Path,
     ud_cfg: dict,
 ) -> dict:
+    """Dock all ligands listed in batch_txt. If the full batch fails, retry
+    with chunks (default 200 ligands/chunk); chunks that still fail are dropped
+    and reported. Final per-target SDF is the concatenation of successful
+    chunks. UniDock2's GAFF parameteriser raises an unrecoverable KeyError on
+    a few exotic ligand chemistries — chunking keeps the failure local.
+    """
     target_yaml = out_sdf.parent / f"{uniprot}_unidock2.yaml"
     _write_target_yaml(
         target_yaml,
@@ -64,43 +112,95 @@ def dock_target(
         ud_cfg["gpu_device_id"],
     )
 
-    cx, cy, cz = box["center"]
-    cmd = [
-        ud_cfg["binary"],
-        "docking",
-        "-r", str(receptor_pdb),
-        "-lb", str(batch_txt),
-        "-c", f"{cx}", f"{cy}", f"{cz}",
-        "-cf", str(target_yaml),
-        "-o", str(out_sdf),
-    ]
-    start = time.time()
-    try:
-        with open(log_file, "w") as log:
-            res = subprocess.run(
-                cmd,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                timeout=ud_cfg["per_target_timeout_s"],
+    all_lines = [ln.strip() for ln in batch_txt.read_text().splitlines() if ln.strip()]
+    full_timeout = ud_cfg["per_target_timeout_s"]
+    chunk_size = ud_cfg.get("chunk_size", 200)
+
+    overall_start = time.time()
+    with open(log_file, "w") as log:
+        # Attempt 1: full batch.
+        rc, elapsed = _run_unidock2_once(
+            receptor_pdb, all_lines, box, out_sdf, target_yaml, log, ud_cfg, full_timeout
+        )
+        if rc == 0 and out_sdf.exists():
+            return {
+                "status": "ok",
+                "elapsed_s": elapsed,
+                "out_sdf": str(out_sdf),
+                "n_input": len(all_lines),
+                "n_chunks": 1,
+                "n_chunks_failed": 0,
+            }
+        log.write(f"\n>>> Full batch returned rc={rc}; falling back to {chunk_size}-ligand chunks\n")
+        log.flush()
+
+        # Fallback: chunked + bisection. If a chunk fails, halve it and
+        # recurse — the offending ligand ends up isolated in a chunk of size 1
+        # while the rest still get docked.
+        chunk_dir = out_sdf.parent / f"{uniprot}_chunks"
+        chunk_dir.mkdir(exist_ok=True)
+        chunk_outputs: list[Path] = []
+        n_dropped = 0
+        chunk_idx = [0]
+
+        def _dock_chunk(lines: list[str]) -> None:
+            nonlocal n_dropped
+            if not lines:
+                return
+            remaining = full_timeout - int(time.time() - overall_start)
+            if remaining < 60:
+                log.write(f"\n>>> {len(lines)} ligands dropped: only {remaining}s budget left\n")
+                n_dropped += len(lines)
+                return
+            c = chunk_idx[0]
+            chunk_idx[0] += 1
+            chunk_out = chunk_dir / f"chunk_{c:04d}.sdf"
+            chunk_yaml = chunk_dir / f"chunk_{c:04d}.yaml"
+            _write_target_yaml(
+                chunk_yaml,
+                box["size"],
+                ud_cfg["num_pose"],
+                ud_cfg["seed"],
+                ud_cfg["energy_range"],
+                ud_cfg["search_mode"],
+                ud_cfg["gpu_device_id"],
             )
-        elapsed = time.time() - start
-        if res.returncode != 0:
+            chunk_timeout = min(remaining, max(600, len(lines) * 5))
+            rc_c, _ = _run_unidock2_once(
+                receptor_pdb, lines, box, chunk_out, chunk_yaml, log, ud_cfg, chunk_timeout
+            )
+            if rc_c == 0 and chunk_out.exists():
+                chunk_outputs.append(chunk_out)
+                return
+            if len(lines) <= 1:
+                log.write(f"\n>>> singleton ligand FAILED — dropping: {lines}\n")
+                n_dropped += 1
+                return
+            log.write(f"\n>>> chunk of {len(lines)} FAILED, bisecting\n")
+            mid = len(lines) // 2
+            _dock_chunk(lines[:mid])
+            _dock_chunk(lines[mid:])
+
+        for start in range(0, len(all_lines), chunk_size):
+            _dock_chunk(all_lines[start : start + chunk_size])
+
+        if not chunk_outputs:
             return {
                 "status": "error",
-                "reason": f"unidock2 exited {res.returncode}",
-                "elapsed_s": elapsed,
+                "reason": "all chunks failed",
+                "elapsed_s": time.time() - overall_start,
+                "n_input": len(all_lines),
+                "n_dropped": n_dropped,
             }
-        if not out_sdf.exists():
-            return {"status": "error", "reason": "no output sdf", "elapsed_s": elapsed}
-        return {"status": "ok", "elapsed_s": elapsed, "out_sdf": str(out_sdf)}
-    except subprocess.TimeoutExpired:
+        _concat_sdf(chunk_outputs, out_sdf)
         return {
-            "status": "timeout",
-            "reason": "exceeded timeout",
-            "elapsed_s": ud_cfg["per_target_timeout_s"],
+            "status": "ok_partial" if n_dropped > 0 else "ok",
+            "elapsed_s": time.time() - overall_start,
+            "out_sdf": str(out_sdf),
+            "n_input": len(all_lines),
+            "n_dropped": n_dropped,
+            "n_chunks_run": chunk_idx[0],
         }
-    except Exception as e:  # noqa: BLE001
-        return {"status": "error", "reason": str(e), "elapsed_s": time.time() - start}
 
 
 def main():
@@ -150,7 +250,7 @@ def main():
         print(msg, flush=True)
 
     (paths["output_dir"] / "unidock2_results.json").write_text(json.dumps(results, indent=2))
-    ok = sum(1 for v in results.values() if v["status"] == "ok")
+    ok = sum(1 for v in results.values() if v["status"] in ("ok", "ok_partial"))
     print(f"\nDone: {ok}/{len(results)} targets succeeded")
 
 

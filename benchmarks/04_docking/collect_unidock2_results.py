@@ -25,29 +25,40 @@ from sklearn.metrics import (
 
 
 _ENERGY_RE = re.compile(r"<vina_binding_free_energy>[^\n]*\n([-\d.eE+]+)")
+_IS_ACTIVE_RE = re.compile(r"<is_active>[^\n]*\n(\d+)")
 
 
 def parse_target_sdf(sdf_path: Path, index: dict) -> list[dict]:
-    """One row per molecule, keeping the best (most negative) Vina energy."""
+    """One row per molecule, keeping the best (most negative) Vina energy.
+
+    UniDock2 preserves the input SDF's `is_active` tag on every output pose,
+    so we read it directly from the output rather than re-joining via index —
+    that way we are insensitive to title-line collisions or chunk reordering.
+    The `index` arg is kept as a fallback for ligands missing the tag.
+    """
     blocks = sdf_path.read_text().split("$$$$")
-    by_name: dict[str, float] = {}
+    by_name: dict[str, tuple[float, int]] = {}
     for blk in blocks:
         if not blk.strip():
             continue
         first_line = blk.lstrip("\n").splitlines()[0].strip()
         if not first_line:
             continue
-        m = _ENERGY_RE.search(blk)
-        if m is None:
+        em = _ENERGY_RE.search(blk)
+        if em is None:
             continue
-        e = float(m.group(1))
-        if first_line not in by_name or e < by_name[first_line]:
-            by_name[first_line] = e
-    rows = []
-    for name, e in by_name.items():
-        is_active = int(index.get(name, {}).get("is_active", 0))
-        rows.append({"name": name, "score": e, "is_active": is_active})
-    return rows
+        e = float(em.group(1))
+        am = _IS_ACTIVE_RE.search(blk)
+        if am is not None:
+            is_active = int(am.group(1))
+        else:
+            is_active = int(index.get(first_line, {}).get("is_active", 0))
+        prev = by_name.get(first_line)
+        if prev is None or e < prev[0]:
+            by_name[first_line] = (e, is_active)
+    return [
+        {"name": name, "score": e, "is_active": ia} for name, (e, ia) in by_name.items()
+    ]
 
 
 def compute_target_metrics(rows: list[dict]) -> dict:
@@ -102,15 +113,17 @@ def main():
     pooled_y, pooled_s = [], []
     for tgt in targets:
         u = tgt["uniprot_id"]
-        if runs.get(u, {}).get("status") != "ok":
-            per_target[u] = {"status": runs.get(u, {}).get("status", "missing")}
+        run_status = runs.get(u, {}).get("status")
+        if run_status not in ("ok", "ok_partial"):
+            per_target[u] = {"status": run_status or "missing"}
             continue
         sdf = paths["docking_dir"] / f"{u}_docked.sdf"
         index = json.loads((paths["unidock2_inputs_dir"] / u / "index.json").read_text())
         rows = parse_target_sdf(sdf, index)
         m = compute_target_metrics(rows)
-        m["status"] = "ok"
+        m["status"] = run_status
         m["elapsed_s"] = runs[u].get("elapsed_s", 0)
+        m["n_chunks_failed"] = runs[u].get("n_chunks_failed", 0)
         per_target[u] = m
         pooled_y.extend([r["is_active"] for r in rows])
         pooled_s.extend([-r["score"] for r in rows])

@@ -29,7 +29,10 @@ from rdkit import Chem
 def derive_box(
     ref_ligand_sdf: Path, padding: float, size_min: float
 ) -> tuple[float, float, float, float, float, float]:
-    suppl = Chem.SDMolSupplier(str(ref_ligand_sdf), removeHs=False)
+    # sanitize=False: some co-crystal ligands (e.g. tetra-valent ammonium N
+    # without an explicit charge in the SDF) trip strict RDKit sanitization,
+    # but we only need atom coordinates for the box.
+    suppl = Chem.SDMolSupplier(str(ref_ligand_sdf), removeHs=False, sanitize=False)
     mol = next((m for m in suppl if m is not None), None)
     if mol is None:
         raise ValueError(f"Cannot read ref ligand from {ref_ligand_sdf}")
@@ -66,12 +69,23 @@ def build_target_inputs(
     ligands_dir = out_dir / "ligands"
     ligands_dir.mkdir(exist_ok=True)
 
-    suppl = Chem.SDMolSupplier(str(all_ligands_sdf), removeHs=False, sanitize=False)
+    # sanitize=True so RDKit drops malformed molecules before they reach
+    # UniDock2's antechamber/GAFF pipeline, which crashes the whole batch on
+    # single-atom ions or weird valences.
+    suppl = Chem.SDMolSupplier(str(all_ligands_sdf), removeHs=False, sanitize=True)
     index: dict[str, dict] = {}
     batch_lines: list[str] = []
     n_skipped = 0
+    n_dropped_small = 0
+    n_dropped_unsanitized = 0
     for i, mol in enumerate(suppl):
         if mol is None:
+            n_dropped_unsanitized += 1
+            n_skipped += 1
+            continue
+        # Drop ions / single atoms / diatomics — antechamber crashes on these.
+        if mol.GetNumHeavyAtoms() < 5:
+            n_dropped_small += 1
             n_skipped += 1
             continue
         name = mol.GetProp("_Name") if mol.HasProp("_Name") else f"{uniprot}_lig_{i}"
@@ -80,9 +94,13 @@ def build_target_inputs(
             safe = f"{safe}_{i}"
         is_active = int(mol.GetProp("is_active")) if mol.HasProp("is_active") else 0
         out_sdf = ligands_dir / f"{safe}.sdf"
-        w = Chem.SDWriter(str(out_sdf))
-        w.write(mol)
-        w.close()
+        try:
+            w = Chem.SDWriter(str(out_sdf))
+            w.write(mol)
+            w.close()
+        except Exception:
+            n_skipped += 1
+            continue
         index[safe] = {"is_active": is_active, "path": str(out_sdf), "title": name}
         batch_lines.append(str(out_sdf))
 
@@ -98,6 +116,8 @@ def build_target_inputs(
         "uniprot": uniprot,
         "n_ligands": len(batch_lines),
         "n_skipped": n_skipped,
+        "n_dropped_small": n_dropped_small,
+        "n_dropped_unsanitized": n_dropped_unsanitized,
         "batch_path": str(batch_path),
         "box": box,
     }

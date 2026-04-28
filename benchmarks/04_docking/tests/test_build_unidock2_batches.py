@@ -13,13 +13,26 @@ from build_unidock2_batches import build_target_inputs, derive_box  # noqa: E402
 
 
 def _write_three_ligand_sdf(p: Path) -> None:
+    # 5+ heavy atoms each — the splitter drops smaller molecules to avoid
+    # antechamber/GAFF crashes on ions and diatomics.
     w = Chem.SDWriter(str(p))
-    for i, smi in enumerate(["CCO", "CCN", "CCC"]):
+    for i, smi in enumerate(["c1ccccc1O", "CCNCCCO", "CC(=O)NCCO"]):
         m = Chem.MolFromSmiles(smi)
         m = Chem.AddHs(m)
         AllChem.EmbedMolecule(m, randomSeed=42)
         m.SetProp("_Name", f"mol_{i}")
         m.SetProp("is_active", "1" if i == 0 else "0")
+        w.write(m)
+    w.close()
+
+
+def _write_tiny_ligand_sdf(p: Path) -> None:
+    """A single-atom ion + a 4-heavy-atom molecule — both below the size floor."""
+    w = Chem.SDWriter(str(p))
+    for smi in ("[I-]", "CCCO"):
+        m = Chem.MolFromSmiles(smi)
+        m = Chem.AddHs(m)
+        AllChem.EmbedMolecule(m, randomSeed=42)
         w.write(m)
     w.close()
 
@@ -62,3 +75,22 @@ def test_box_derived_from_ref_ligand(tmp_path):
     cx, cy, cz, sx, sy, sz = derive_box(ref, padding=4.0, size_min=22.5)
     # benzene bbox is small → size floored at 22.5
     assert sx == sy == sz == 22.5
+
+
+def test_splitter_drops_small_and_unsanitized(tmp_path):
+    src = tmp_path / "X_all_ligands.sdf"
+    _write_tiny_ligand_sdf(src)
+    ref = tmp_path / "X_ref_ligand.sdf"
+    _write_ref_ligand(ref)
+    out = tmp_path / "out" / "X"
+    info = build_target_inputs(
+        uniprot="X",
+        all_ligands_sdf=src,
+        ref_ligand_sdf=ref,
+        out_dir=out,
+        padding=4.0,
+        size_min=22.5,
+    )
+    # Both inputs are below 5 heavy atoms (iodide=1, propanol=4).
+    assert info["n_ligands"] == 0
+    assert info["n_dropped_small"] >= 1
