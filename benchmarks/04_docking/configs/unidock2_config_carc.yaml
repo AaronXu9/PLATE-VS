@@ -1,0 +1,27 @@
+unidock2:
+  binary: "/project2/katritch_223/aoxu/conda/envs/unidock2/bin/unidock2"
+  conda_env: "unidock2"
+  search_mode: "balance"
+  num_pose: 9
+  seed: 42
+  energy_range: 3.0
+  box_padding_per_side: 4.0
+  box_size_min: 22.5
+  gpu_device_id: 0
+  per_target_timeout_s: 14400
+  chunk_size: 200
+  bisect_max_depth: 3
+
+data:
+  similarity_threshold: "0p7"
+
+# Absolute paths under the CARC project tree.
+paths:
+  output_dir:           "/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results_full"
+  receptor_dir:         "/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results_full/receptors"
+  ligand_dir:           "/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results_full/ligands"
+  unidock2_inputs_dir:  "/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results_full/unidock2_inputs"
+  docking_dir:          "/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results_full/docking_unidock2"
+
+parallelism:
+  n_workers: 1
