@@ -20,6 +20,23 @@ from pathlib import Path
 import yaml
 
 
+def _skip_target(uniprot: str, out_sdf: Path, prior: dict) -> dict | None:
+    """Return a reusable prior result entry if this target is already done.
+
+    A target is "done" when (a) its docked SDF is present on disk and
+    (b) the prior unidock2_results.json has a status of ok or ok_partial.
+    Otherwise return None and the runner re-docks.
+    """
+    if not out_sdf.exists():
+        return None
+    rec = prior.get(uniprot)
+    if not rec:
+        return None
+    if rec.get("status") not in ("ok", "ok_partial"):
+        return None
+    return rec
+
+
 def _write_target_yaml(
     cfg_path: Path,
     size: list[float],
@@ -217,6 +234,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     ap.add_argument("--targets", nargs="*", help="Subset of UniProt IDs to dock")
+    ap.add_argument(
+        "--no-skip-existing",
+        action="store_true",
+        help="Re-dock every target even if results exist (default: skip).",
+    )
+    ap.add_argument("--shard-id", type=int, default=None, help="0-indexed shard id (default: no sharding)")
+    ap.add_argument("--n-shards", type=int, default=None, help="Total number of shards")
     args = ap.parse_args()
 
     with open(args.config) as f:
@@ -235,8 +259,22 @@ def main():
         sys.exit(1)
     prep = json.loads(prep_path.read_text())
 
+    # Load prior results so SLURM restarts can skip already-completed targets.
+    results_path = paths["output_dir"] / "unidock2_results.json"
+    prior: dict = {}
+    if results_path.exists() and not args.no_skip_existing:
+        try:
+            prior = json.loads(results_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            prior = {}
+
+    targets_sorted = sorted(targets, key=lambda t: t["uniprot_id"])
+
     results = {}
-    for tgt in targets:
+    for idx, tgt in enumerate(targets_sorted):
+        if args.shard_id is not None and args.n_shards:
+            if idx % args.n_shards != args.shard_id:
+                continue
         u = tgt["uniprot_id"]
         if args.targets and u not in args.targets:
             continue
@@ -245,17 +283,24 @@ def main():
             results[u] = {"status": "skipped", "reason": info.get("status", "missing")}
             continue
         receptor_pdb = paths["receptor_dir"] / f"{u}_clean.pdb"
-        batch_txt = Path(info["batch_path"])
         out_sdf = paths["docking_dir"] / f"{u}_docked.sdf"
         log_file = paths["docking_dir"] / f"{u}_unidock2.log"
+
+        reuse = _skip_target(u, out_sdf, prior)
+        if reuse is not None:
+            print(f"[{u}] skip-existing: reusing prior result ({reuse.get('status')})", flush=True)
+            results[u] = reuse
+            continue
+
         if not receptor_pdb.exists():
             results[u] = {"status": "skipped", "reason": f"receptor missing: {receptor_pdb}"}
             continue
+        batch_txt = Path(info["batch_path"])
         print(f"[{u}] docking {info['n_ligands']} ligands ...", flush=True)
         r = dock_target(u, receptor_pdb, batch_txt, info["box"], out_sdf, log_file, ud)
         results[u] = r
         msg = f"  [{u}] {r['status']} in {r.get('elapsed_s', 0):.0f}s"
-        if r["status"] != "ok":
+        if r["status"] not in ("ok", "ok_partial"):
             msg += f"  err={r.get('reason')}"
         print(msg, flush=True)
 
