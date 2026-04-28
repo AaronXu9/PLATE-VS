@@ -1,0 +1,27 @@
+unidock2:
+  binary: "/home/aoxu/miniconda3/envs/unidock2/bin/unidock2"
+  conda_env: "unidock2"
+  search_mode: "balance"
+  num_pose: 9
+  seed: 42
+  energy_range: 3.0
+  box_padding_per_side: 4.0
+  box_size_min: 22.5
+  gpu_device_id: 0
+  per_target_timeout_s: 14400
+
+data:
+  similarity_threshold: "0p7"
+
+# Absolute paths to the source-repo's gnina prep artifacts (results/ is
+# gitignored, so it lives only in the original tree). Outputs are written back
+# into the same results/ tree alongside the gnina deliverables.
+paths:
+  output_dir:           "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results"
+  receptor_dir:         "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results/receptors"
+  ligand_dir:           "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results/ligands"
+  unidock2_inputs_dir:  "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results/unidock2_inputs"
+  docking_dir:          "/home/aoxu/projects/VLS-Benchmark-Dataset/benchmarks/04_docking/results/docking_unidock2"
+
+parallelism:
+  n_workers: 1
