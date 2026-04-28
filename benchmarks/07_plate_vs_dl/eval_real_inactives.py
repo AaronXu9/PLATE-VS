@@ -160,10 +160,19 @@ def main():
     for key in ["registry_path", "protein_emb_path", "conformer_path"]:
         if key in config["data"] and config["data"][key]:
             config["data"][key] = str((config_dir / config["data"][key]).resolve())
-    # Use regression registry for pChEMBL values
-    config["data"]["registry_path"] = config["data"]["registry_path"].replace(
-        "registry_soft_split.csv", "registry_soft_split_regression.csv"
-    )
+    # Use regression registry for pChEMBL values (only it has the `pchembl` column).
+    # This applies regardless of which split the trained model used.
+    reg_path = config["data"]["registry_path"]
+    project_root = Path(reg_path).resolve().parent
+    pchembl_registry = project_root / "registry_soft_split_regression.csv"
+    if not pchembl_registry.exists():
+        raise FileNotFoundError(
+            f"pchembl registry not found: {pchembl_registry}. "
+            "Real-inactive evaluation requires registry_soft_split_regression.csv "
+            "(it has the `pchembl` column)."
+        )
+    config["data"]["registry_path"] = str(pchembl_registry)
+    print(f"  Real-inactive eval registry: {pchembl_registry}")
 
     dc = config["data"]
     mc = config["model"]
