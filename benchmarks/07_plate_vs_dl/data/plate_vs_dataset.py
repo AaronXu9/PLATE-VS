@@ -161,7 +161,14 @@ class PlateVSDataset(Dataset):
         # Ligand 3D from SMILES
         lig_data = self._get_conformer(smiles)
         if lig_data is None:
-            # Return a dummy sample (will be filtered in collate)
+            # WARNING: dummy single-atom fallback. This is a SENTINEL — the model
+            # will trivially separate dummy from real samples. Caller must ensure
+            # all SMILES have valid conformers (precompute or RDKit fallback).
+            # Counter so we can monitor unexpected fallbacks.
+            self._n_failed = getattr(self, "_n_failed", 0) + 1
+            if self._n_failed in (1, 10, 100, 1000) or self._n_failed % 10000 == 0:
+                print(f"  WARNING: {self._n_failed} samples failed to get conformer "
+                      f"(returning dummy). Latest SMILES: {smiles[:80]}")
             lig_data = {
                 "z": torch.tensor([6], dtype=torch.long),
                 "pos": torch.zeros(1, 3, dtype=torch.float32),
@@ -184,18 +191,18 @@ class PlateVSDataset(Dataset):
         )
 
     def _get_conformer(self, smiles: str) -> dict | None:
-        """Load precomputed conformer or generate on-the-fly."""
+        """Load precomputed conformer; fall back to on-the-fly RDKit if missing."""
         # Try precomputed first
         if self._precomputed_conformers is not None:
             entry = self._precomputed_conformers.get(smiles)
-            if entry is None:
-                return None
-            return {
-                "z": torch.tensor(entry["z"], dtype=torch.long),
-                "pos": torch.tensor(entry["pos"], dtype=torch.float32),
-            }
+            if entry is not None:
+                return {
+                    "z": torch.tensor(entry["z"], dtype=torch.long),
+                    "pos": torch.tensor(entry["pos"], dtype=torch.float32),
+                }
+            # Cache miss — fall through to on-the-fly generation
 
-        # Fallback: on-the-fly generation with cache
+        # On-the-fly generation with LRU cache
         if smiles in self._conformer_cache:
             return self._conformer_cache[smiles]
 

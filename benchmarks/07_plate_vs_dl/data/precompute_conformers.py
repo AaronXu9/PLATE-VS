@@ -59,14 +59,27 @@ def generate_conformer(smiles: str) -> tuple[str, np.ndarray | None, np.ndarray 
     return smiles, z, pos
 
 
-def collect_unique_smiles(registry_path: str, threshold: str | None) -> list[str]:
-    """Read unique SMILES from registry CSV, optionally filtering by threshold."""
+def collect_unique_smiles(registry_path: str, threshold: str | None,
+                          include_decoys: bool = True) -> list[str]:
+    """Read unique SMILES from registry CSV.
+
+    Args:
+        threshold: If set, restricts ACTIVES to that similarity_threshold.
+            Decoys are always included (they have NaN similarity_threshold) when
+            include_decoys=True.
+        include_decoys: Whether to include decoy SMILES.
+    """
     smiles_set = set()
     with open(registry_path) as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if threshold and row.get("similarity_threshold") != threshold:
-                continue
+            is_active = row.get("is_active") == "True"
+            if is_active:
+                if threshold and row.get("similarity_threshold") != threshold:
+                    continue
+            else:
+                if not include_decoys:
+                    continue
             smi = row["smiles"]
             if smi:
                 smiles_set.add(smi)
@@ -76,21 +89,42 @@ def collect_unique_smiles(registry_path: str, threshold: str | None) -> list[str
 def main():
     parser = argparse.ArgumentParser(description="Precompute ligand conformers")
     parser.add_argument("--registry", required=True, help="Path to registry CSV")
-    parser.add_argument("--output", required=True, help="Output .npz path")
-    parser.add_argument("--threshold", default=None, help="Filter by similarity_threshold (e.g. 0p7). None=all.")
+    parser.add_argument("--output", required=True, help="Output .pkl path")
+    parser.add_argument("--threshold", default=None, help="Filter actives by similarity_threshold (e.g. 0p7). None=all.")
+    parser.add_argument("--no-decoys", action="store_true", help="Exclude decoys")
+    parser.add_argument("--extend", default=None,
+                        help="Path to existing .pkl to load and extend (skip already-computed SMILES)")
     parser.add_argument("--num-workers", type=int, default=1, help="Number of parallel workers")
     parser.add_argument("--batch-size", type=int, default=5000, help="Progress reporting batch size")
     args = parser.parse_args()
 
-    # Collect unique SMILES
-    print(f"Reading SMILES from {args.registry} (threshold={args.threshold})...")
-    smiles_list = collect_unique_smiles(args.registry, args.threshold)
-    print(f"  {len(smiles_list):,} unique SMILES")
+    # Load existing cache if extending
+    existing = {}
+    if args.extend:
+        ext_path = Path(args.extend)
+        if ext_path.exists():
+            print(f"Loading existing cache from {ext_path}...")
+            with open(ext_path, "rb") as f:
+                existing = pickle.load(f)
+            print(f"  {len(existing):,} pre-existing conformers")
+        else:
+            print(f"  --extend path does not exist, starting fresh")
 
-    # Generate conformers
+    # Collect unique SMILES
+    include_decoys = not args.no_decoys
+    print(f"Reading SMILES from {args.registry} (threshold={args.threshold}, include_decoys={include_decoys})...")
+    smiles_list = collect_unique_smiles(args.registry, args.threshold, include_decoys=include_decoys)
+    print(f"  {len(smiles_list):,} unique SMILES in registry")
+
+    # Skip already-computed SMILES if extending
+    if existing:
+        smiles_list = [s for s in smiles_list if s not in existing]
+        print(f"  {len(smiles_list):,} new SMILES to compute (skipping {len(existing):,} already in cache)")
+
+    # Generate conformers (start from existing cache if extending)
     print(f"Generating conformers with {args.num_workers} worker(s)...")
     t0 = time.time()
-    results = {}
+    results = dict(existing)  # start with existing entries; new ones will be added
     n_success = 0
     n_fail = 0
 
