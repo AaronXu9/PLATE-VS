@@ -115,6 +115,7 @@ def dock_target(
     all_lines = [ln.strip() for ln in batch_txt.read_text().splitlines() if ln.strip()]
     full_timeout = ud_cfg["per_target_timeout_s"]
     chunk_size = ud_cfg.get("chunk_size", 200)
+    bisect_max_depth = ud_cfg.get("bisect_max_depth", 3)
 
     overall_start = time.time()
     with open(log_file, "w") as log:
@@ -143,7 +144,7 @@ def dock_target(
         n_dropped = 0
         chunk_idx = [0]
 
-        def _dock_chunk(lines: list[str]) -> None:
+        def _dock_chunk(lines: list[str], depth: int = 0) -> None:
             nonlocal n_dropped
             if not lines:
                 return
@@ -165,21 +166,30 @@ def dock_target(
                 ud_cfg["search_mode"],
                 ud_cfg["gpu_device_id"],
             )
-            chunk_timeout = min(remaining, max(600, len(lines) * 5))
+            chunk_timeout = min(remaining, max(120, len(lines) * 3 + 60))
             rc_c, _ = _run_unidock2_once(
                 receptor_pdb, lines, box, chunk_out, chunk_yaml, log, ud_cfg, chunk_timeout
             )
             if rc_c == 0 and chunk_out.exists():
                 chunk_outputs.append(chunk_out)
                 return
+            # Failure path: bisect up to bisect_max_depth, otherwise drop the
+            # whole chunk so a chemistry-killer doesn't blow the time budget.
+            if depth >= bisect_max_depth:
+                log.write(
+                    f"\n>>> chunk of {len(lines)} FAILED at depth {depth} "
+                    f"(>= cap {bisect_max_depth}) — dropping {len(lines)} ligands\n"
+                )
+                n_dropped += len(lines)
+                return
             if len(lines) <= 1:
                 log.write(f"\n>>> singleton ligand FAILED — dropping: {lines}\n")
                 n_dropped += 1
                 return
-            log.write(f"\n>>> chunk of {len(lines)} FAILED, bisecting\n")
+            log.write(f"\n>>> chunk of {len(lines)} FAILED, bisecting (depth {depth + 1})\n")
             mid = len(lines) // 2
-            _dock_chunk(lines[:mid])
-            _dock_chunk(lines[mid:])
+            _dock_chunk(lines[:mid], depth=depth + 1)
+            _dock_chunk(lines[mid:], depth=depth + 1)
 
         for start in range(0, len(all_lines), chunk_size):
             _dock_chunk(all_lines[start : start + chunk_size])
