@@ -24,6 +24,20 @@ from pathlib import Path
 import numpy as np
 import yaml
 from rdkit import Chem
+from rdkit.Chem import AllChem
+
+
+def _largest_fragment(mol: Chem.Mol) -> Chem.Mol | None:
+    """Return the largest connected fragment (by heavy-atom count).
+
+    UniDock2's antechamber/GAFF pipeline crashes on multi-component ligands
+    (e.g. quaternary-ammonium SMILES paired with a [Cl-]/[I-] counter-ion in
+    PLATE-VS). We strip salts here before writing per-ligand SDFs.
+    """
+    frags = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
+    if not frags:
+        return None
+    return max(frags, key=lambda f: f.GetNumHeavyAtoms())
 
 
 def derive_box(
@@ -78,11 +92,21 @@ def build_target_inputs(
     n_skipped = 0
     n_dropped_small = 0
     n_dropped_unsanitized = 0
+    n_desalted = 0
     for i, mol in enumerate(suppl):
         if mol is None:
             n_dropped_unsanitized += 1
             n_skipped += 1
             continue
+        # Strip counter-ions / co-formers — antechamber crashes on
+        # multi-component ligands.
+        n_frags = len(Chem.GetMolFrags(mol))
+        if n_frags > 1:
+            mol = _largest_fragment(mol)
+            if mol is None:
+                n_skipped += 1
+                continue
+            n_desalted += 1
         # Drop ions / single atoms / diatomics — antechamber crashes on these.
         if mol.GetNumHeavyAtoms() < 5:
             n_dropped_small += 1
@@ -118,6 +142,7 @@ def build_target_inputs(
         "n_skipped": n_skipped,
         "n_dropped_small": n_dropped_small,
         "n_dropped_unsanitized": n_dropped_unsanitized,
+        "n_desalted": n_desalted,
         "batch_path": str(batch_path),
         "box": box,
     }

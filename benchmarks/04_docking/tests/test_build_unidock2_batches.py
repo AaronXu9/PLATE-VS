@@ -77,6 +77,42 @@ def test_box_derived_from_ref_ligand(tmp_path):
     assert sx == sy == sz == 22.5
 
 
+def _write_salt_ligand_sdf(p: Path) -> None:
+    """A quaternary-ammonium / iodide salt — UniDock2 chokes on multi-component
+    inputs, so the splitter must strip the counter-ion."""
+    w = Chem.SDWriter(str(p))
+    m = Chem.MolFromSmiles("C[N+](C)(C)CCOC(N)=O.[Cl-]")
+    m = Chem.AddHs(m)
+    AllChem.EmbedMolecule(m, randomSeed=42)
+    m.SetProp("_Name", "salt_active")
+    m.SetProp("is_active", "1")
+    w.write(m)
+    w.close()
+
+
+def test_splitter_strips_salts(tmp_path):
+    src = tmp_path / "X_all_ligands.sdf"
+    _write_salt_ligand_sdf(src)
+    ref = tmp_path / "X_ref_ligand.sdf"
+    _write_ref_ligand(ref)
+    out = tmp_path / "out" / "X"
+    info = build_target_inputs(
+        uniprot="X",
+        all_ligands_sdf=src,
+        ref_ligand_sdf=ref,
+        out_dir=out,
+        padding=4.0,
+        size_min=22.5,
+    )
+    assert info["n_ligands"] == 1
+    assert info["n_desalted"] == 1
+    # Verify output SDF only contains the parent fragment (Cl- gone).
+    written = list(Chem.SDMolSupplier(str(out / "ligands" / "salt_active.sdf"), removeHs=False, sanitize=False))
+    mol = next(m for m in written if m is not None)
+    assert len(Chem.GetMolFrags(mol)) == 1
+    assert mol.GetNumHeavyAtoms() >= 7  # parent has 7 heavy atoms; Cl- gone
+
+
 def test_splitter_drops_small_and_unsanitized(tmp_path):
     src = tmp_path / "X_all_ligands.sdf"
     _write_tiny_ligand_sdf(src)
