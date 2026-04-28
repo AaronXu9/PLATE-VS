@@ -1,0 +1,27 @@
+# Same structure as gnina_config.yaml but full-scale: every test/0p7 target
+# with >=10 actives, no sampling cap. Output dir is results_full so the
+# 15-target run stays untouched.
+gnina:
+  binary: "/home/aoxu/projects/PoseBench/forks/GNINA/gnina"
+  num_modes: 10
+  exhaustiveness: 3
+  cnn_scoring: "rescore"
+  autobox_add: 4.0
+  cpu: 4
+  device: 0
+
+data:
+  registry: "training_data_full/registry_2d_split.csv"
+  protein_references: "training_data_full/protein_references.json"
+  similarity_threshold: "0p7"
+  n_targets: null            # uncapped: take all eligible
+  min_actives_per_target: 10
+
+paths:
+  output_dir: "benchmarks/04_docking/results_full"
+  receptor_dir: "benchmarks/04_docking/results_full/receptors"
+  ligand_dir: "benchmarks/04_docking/results_full/ligands"
+  docking_dir: "benchmarks/04_docking/results_full/docking"
+
+parallelism:
+  n_workers: 1

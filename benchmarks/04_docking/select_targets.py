@@ -122,8 +122,11 @@ def select_targets(config: dict, workdir: str = ".") -> list[dict]:
     # Sort by resolution (lower = better), then quality_score descending
     target_meta.sort(key=lambda x: (x["resolution"], -x["quality_score"]))
 
-    # Diverse selection: bin by active count (log-scale) and sample uniformly
-    if len(target_meta) <= n_targets:
+    # Uncapped path: when n_targets is null, take every eligible target.
+    if n_targets is None:
+        print(f"Uncapped selection: {len(target_meta)} targets meet min_actives={min_actives}.")
+        selected = target_meta
+    elif len(target_meta) <= n_targets:
         selected = target_meta
     else:
         counts = np.array([t["n_actives"] for t in target_meta])
