@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=unidock2_prep
 #SBATCH --account=katritch_223
-#SBATCH --partition=epyc-64
+#SBATCH --partition=oneweek
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
