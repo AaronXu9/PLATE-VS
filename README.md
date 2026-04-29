@@ -1,4 +1,4 @@
-# VLS-Benchmark-Dataset
+# PLATE-VS
 
 A virtual-screening (VS) benchmark built on the **PLATE-VS** dataset, with reference
 implementations for classical ML, deep-learning, and structure-based docking methods.
@@ -18,8 +18,8 @@ If you use this code, please cite both the paper and the archived release.
 Machine-readable metadata for the release is in [`CITATION.cff`](CITATION.cff)
 (also published to Zenodo on each tagged release):
 
-> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *VLS-Benchmark-Dataset: PLATE-VS
-> virtual screening benchmark*. v1.0.0. Zenodo. DOI: `10.5281/zenodo.XXXXXXX`.
+> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *PLATE-VS: virtual screening
+> benchmark*. v1.0.0. Zenodo. DOI: `10.5281/zenodo.XXXXXXX`.
 
 Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors. Replace
 `XXXXXXX` with the concept DOI shown on the Zenodo record once it is minted.
@@ -225,7 +225,7 @@ Full definitions and code pointers in [`METRICS.md`](METRICS.md).
 ## 3. Repository layout
 
 ```
-VLS-Benchmark-Dataset/
+PLATE-VS/
 ├── benchmarks/
 │   ├── 01_preprocessing/        # Build registry, assign splits, select structures
 │   ├── 02_training/             # Classical ML + DeepPurpose
