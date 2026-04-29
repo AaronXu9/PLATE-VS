@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "VLS-Benchmark-Dataset: PLATE-VS virtual screening benchmark"
+type: software
+version: 1.0.0
+date-released: "2026-04-29"
+license: MIT
+repository-code: "https://github.com/AaronXu9/PLATE-VS"
+url: "https://github.com/AaronXu9/PLATE-VS"
+authors:
+  - family-names: Xu
+    given-names: Ao
+    email: aoxu@usc.edu
+    affiliation: "Department of Computer Science, University of Southern California, USA"
+  - family-names: Hong
+    given-names: Yongchan
+    email: hongyong@usc.edu
+    affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+  - family-names: Lam
+    given-names: "Jordy Homing"
+    email: homingla@usc.edu
+    affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+  - family-names: Katritch
+    given-names: Vsevolod
+    email: katritch@usc.edu
+    affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+keywords:
+  - virtual screening
+  - drug discovery
+  - protein-ligand binding
+  - benchmark
+  - machine learning
+  - deep learning
+  - molecular docking
+  - PDBbind
+  - ChEMBL
+  - GNINA

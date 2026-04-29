@@ -1,0 +1,45 @@
+{
+  "title": "VLS-Benchmark-Dataset: PLATE-VS virtual screening benchmark",
+  "description": "Reference implementations (classical ML, deep-learning, structure-based docking with GNINA, custom dual-encoder DL) for the PLATE-VS protein-ligand virtual screening benchmark, with a companion PDBbind CleanSplit affinity-regression track. Code archive accompanying the Nucleic Acids Research publication. Authors Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors.",
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Xu, Ao",
+      "affiliation": "University of Southern California"
+    },
+    {
+      "name": "Hong, Yongchan",
+      "affiliation": "University of Southern California"
+    },
+    {
+      "name": "Lam, Jordy Homing",
+      "affiliation": "University of Southern California"
+    },
+    {
+      "name": "Katritch, Vsevolod",
+      "affiliation": "University of Southern California"
+    }
+  ],
+  "keywords": [
+    "virtual screening",
+    "drug discovery",
+    "protein-ligand binding",
+    "benchmark",
+    "machine learning",
+    "deep learning",
+    "molecular docking",
+    "PDBbind",
+    "ChEMBL",
+    "GNINA"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.15482796",
+      "relation": "isDerivedFrom",
+      "scheme": "doi",
+      "resource_type": "dataset"
+    }
+  ]
+}
