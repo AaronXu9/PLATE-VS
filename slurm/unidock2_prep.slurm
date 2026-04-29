@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=unidock2_prep
 #SBATCH --account=katritch_223
-#SBATCH --partition=oneweek
+#SBATCH --partition=main
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=120GB
-#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64GB
+#SBATCH --time=8:00:00
 #SBATCH --output=slurm/logs/unidock2_prep_%j.out
 #SBATCH --error=slurm/logs/unidock2_prep_%j.err
 
@@ -29,7 +29,7 @@ python benchmarks/04_docking/prepare_structures.py \
 
 python benchmarks/04_docking/prepare_ligands.py \
     --config benchmarks/04_docking/configs/gnina_full_config.yaml \
-    --n-workers 24
+    --n-workers 16
 
 python benchmarks/04_docking/build_unidock2_batches.py \
     --config benchmarks/04_docking/configs/unidock2_config_carc.yaml
