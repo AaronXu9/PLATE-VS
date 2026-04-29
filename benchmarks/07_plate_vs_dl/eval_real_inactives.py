@@ -223,6 +223,8 @@ def main():
 
     with torch.no_grad():
         for batch in loader:
+            if batch is None:
+                continue
             batch = batch.to(device)
             logits = model(batch).squeeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()

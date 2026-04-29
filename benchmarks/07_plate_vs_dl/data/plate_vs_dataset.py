@@ -153,7 +153,7 @@ class PlateVSDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int) -> Data:
+    def __getitem__(self, idx: int) -> Data | None:
         sample = self.samples[idx]
         smiles = sample["smiles"]
         uid = sample["uniprot_id"]
@@ -161,18 +161,16 @@ class PlateVSDataset(Dataset):
         # Ligand 3D from SMILES
         lig_data = self._get_conformer(smiles)
         if lig_data is None:
-            # WARNING: dummy single-atom fallback. This is a SENTINEL — the model
-            # will trivially separate dummy from real samples. Caller must ensure
-            # all SMILES have valid conformers (precompute or RDKit fallback).
-            # Counter so we can monitor unexpected fallbacks.
+            # Conformer generation failed (e.g., huge peptides ETKDGv3 can't embed).
+            # Skip this sample — custom_collate filters Nones from the batch.
             self._n_failed = getattr(self, "_n_failed", 0) + 1
             if self._n_failed in (1, 10, 100, 1000) or self._n_failed % 10000 == 0:
-                print(f"  WARNING: {self._n_failed} samples failed to get conformer "
-                      f"(returning dummy). Latest SMILES: {smiles[:80]}")
-            lig_data = {
-                "z": torch.tensor([6], dtype=torch.long),
-                "pos": torch.zeros(1, 3, dtype=torch.float32),
-            }
+                print(f"  WARNING: {self._n_failed} samples skipped (no conformer). "
+                      f"Latest SMILES: {smiles[:80]}")
+            return None
+        # Defend against degenerate single-atom inputs (would NaN ET attention).
+        if lig_data["z"].shape[0] < 2:
+            return None
 
         # Protein embedding
         prot_emb = torch.tensor(

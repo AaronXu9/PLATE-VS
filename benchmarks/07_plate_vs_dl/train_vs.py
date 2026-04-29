@@ -75,6 +75,8 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
     n_samples = 0
 
     for batch in loader:
+        if batch is None:
+            continue
         batch = batch.to(device)
         optimizer.zero_grad()
 

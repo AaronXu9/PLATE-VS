@@ -57,8 +57,15 @@ class AffinityBatch:
         return self
 
 
-def custom_collate(data_list: list[Data]) -> AffinityBatch:
-    """Collate a list of Data objects into an AffinityBatch."""
+def custom_collate(data_list: list[Data | None]) -> AffinityBatch | None:
+    """Collate a list of Data objects into an AffinityBatch.
+
+    Filters out None entries (e.g., samples where conformer generation failed).
+    Returns None if the entire batch is invalid; callers must skip None batches.
+    """
+    data_list = [d for d in data_list if d is not None]
+    if len(data_list) == 0:
+        return None
     B = len(data_list)
 
     # Extract protein embeddings and metadata

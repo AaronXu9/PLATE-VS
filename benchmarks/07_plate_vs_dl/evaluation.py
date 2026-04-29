@@ -130,6 +130,81 @@ def per_target_ef(
     }
 
 
+def bigbind_efb(
+    active_scores: Sequence[float],
+    decoy_scores: Sequence[float],
+    select_frac: float,
+) -> float:
+    """BigBind-style "balanced" enrichment factor at a given decoy-fraction cutoff.
+
+    EFB = P(score >= t | active) / P(score >= t | decoy)
+    where t is set so P(score >= t | decoy) ≈ select_frac.
+
+    Equivalent to TPR / FPR at a chosen FPR. Prevalence-free: invariant to the
+    active:decoy ratio, unlike the standard pooled enrichment factor. See
+    https://github.com/molecularmodelinglab/bigbind/blob/master/baselines/efb.py
+
+    Args:
+        active_scores: predicted scores assigned to actives (1-d array).
+        decoy_scores: predicted scores assigned to decoys/randoms (1-d array).
+        select_frac: top fraction of decoys to admit (e.g. 0.01 → EFB@1%).
+
+    Returns:
+        EFB. 0.0 if no actives clear the threshold; np.nan if either array empty.
+    """
+    a = np.asarray(active_scores, dtype=np.float64)
+    d = np.asarray(decoy_scores, dtype=np.float64)
+    if a.size == 0 or d.size == 0:
+        return float("nan")
+    select_num = round((1.0 - select_frac) * len(d))
+    select_num = min(max(select_num, 1), len(d))
+    threshold = np.sort(d)[select_num - 1]
+    p_decoy = float((d >= threshold).sum()) / len(d)
+    p_active = float((a >= threshold).sum()) / len(a)
+    if p_active == 0.0:
+        return 0.0
+    return p_active / p_decoy
+
+
+def per_target_efb(
+    uids: Sequence,
+    labels: Sequence[float],
+    scores: Sequence[float],
+    percentages: Iterable[float] = (1.0, 5.0),
+) -> dict[str, float]:
+    """Mean per-target EFB (BigBind balanced EF) across targets.
+
+    For each target with both actives and decoys, splits scores by label and
+    computes EFB at each `select_frac = pct/100`. Returns the mean across targets.
+
+    Returned keys: `per_target_efb_<pct>pct_mean` and matching `_std`/`_n`.
+    """
+    uids = np.asarray(uids)
+    labels = np.asarray(labels)
+    scores = np.asarray(scores)
+    fracs = [p / 100.0 for p in percentages]
+    by_pct: dict[float, list[float]] = {f: [] for f in fracs}
+    for uid in np.unique(uids):
+        m = uids == uid
+        y = labels[m]
+        s = scores[m]
+        a, d = s[y > 0], s[y == 0]
+        if a.size == 0 or d.size == 0:
+            continue
+        for f in fracs:
+            by_pct[f].append(bigbind_efb(a, d, f))
+    out: dict[str, float] = {}
+    for pct, f in zip(percentages, fracs):
+        vals = [v for v in by_pct[f] if not np.isnan(v)]
+        if not vals:
+            continue
+        key_base = _ef_key(pct).replace("ef_", "efb_")
+        out[f"per_target_{key_base}_mean"] = round(float(np.mean(vals)), 4)
+        out[f"per_target_{key_base}_std"] = round(float(np.std(vals)), 4)
+        out[f"per_target_{key_base}_n"] = len(vals)
+    return out
+
+
 @torch.no_grad()
 def evaluate(model, loader, criterion, device):
     model.eval()
@@ -138,6 +213,8 @@ def evaluate(model, loader, criterion, device):
     n_samples = 0
 
     for batch in loader:
+        if batch is None:
+            continue
         batch = batch.to(device)
         logits = model(batch)
         loss = criterion(logits.squeeze(-1), batch.y.squeeze(-1))

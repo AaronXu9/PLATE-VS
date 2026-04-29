@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64GB
-#SBATCH --time=12:00:00
+#SBATCH --time=36:00:00
 #SBATCH --output=slurm/logs/plate_vs_dl_%x_%j.out
 #SBATCH --error=slurm/logs/plate_vs_dl_%x_%j.err
 
@@ -55,7 +55,8 @@ except Exception as e:
 # ---- 1. Train ----
 echo ""
 echo "==== STEP 1: Training ===="
-python benchmarks/07_plate_vs_dl/train_vs.py --config "${CONFIG}"
+# -u: unbuffered stdout/stderr so progress shows up live in slurm logs.
+python -u benchmarks/07_plate_vs_dl/train_vs.py --config "${CONFIG}"
 
 # ---- 2. Determine the trained checkpoint path (read from config) ----
 # train_vs.py does os.chdir(benchmarks/07_plate_vs_dl) before training,
@@ -82,7 +83,7 @@ fi
 echo ""
 echo "==== STEP 2: Real inactive evaluation ===="
 RESULT_OUT="benchmarks/07_plate_vs_dl/results/${RESULT_TAG}_real_inactives_eval.json"
-python benchmarks/07_plate_vs_dl/eval_real_inactives.py \
+python -u benchmarks/07_plate_vs_dl/eval_real_inactives.py \
     --checkpoint "${CKPT_PATH}" \
     --config "${CONFIG}" \
     --output "${RESULT_OUT}"
