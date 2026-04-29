@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=unidock2_prep
 #SBATCH --account=katritch_223
-#SBATCH --partition=main
+#SBATCH --partition=debug
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64GB
-#SBATCH --time=8:00:00
+#SBATCH --time=1:00:00
 #SBATCH --output=slurm/logs/unidock2_prep_%j.out
 #SBATCH --error=slurm/logs/unidock2_prep_%j.err
 
