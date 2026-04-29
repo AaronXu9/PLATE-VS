@@ -1,6 +1,0 @@
-Metric,Initial,After Quality,After Dedup,After Lipinski,Quality Retention (%),Dedup Retention (%),Lipinski Retention (%),Overall Retention (%)
-Activities,1083000,835715,2295,0,77.2,0.3,0.0,0.0
-Unique Compounds,1499,1240,1240,0,82.7,100.0,0.0,0.0
-Unique UniProt IDs,361,361,1,0,100.0,0.3,0.0,0.0
-Unique Assays,631,504,504,0,79.9,100.0,0.0,0.0
-Unique Targets,259,238,238,0,91.9,100.0,0.0,0.0

@@ -236,15 +236,12 @@ VLS-Benchmark-Dataset/
 │   ├── 07_plate_vs_dl/          # Custom dual-encoder DL (ESM2 + ligand encoder)
 │   ├── configs/                 # Method-level config YAMLs
 │   ├── envs/                    # Conda env files
-│   ├── BENCHMARKING_GUIDE.md    # Step-by-step usage
-│   └── README.md
+│   └── BENCHMARKING_GUIDE.md    # Step-by-step usage
 ├── data/
 │   ├── pdbbind_cleansplit/      # PDBbind CleanSplit datasets
 │   └── plate_vs_conformers/     # Pre-computed 3D conformers for PLATE-VS ligands
-├── training_data_full/          # registry_2d_split.csv, protein_references.json
-├── docs/                        # Guides, presentation figures, parallel-pipeline notes
+├── training_data_full/          # registry_2d_split.csv, protein_references.json (not bundled)
 ├── scripts/                     # Helpers
-├── slurm/ + logs/               # Cluster job scripts and run logs
 ├── METRICS.md                   # Metric definitions
 ├── SOFT_SPLIT_REGISTRY.md       # Soft-split documentation
 └── README.md                    # this file
@@ -346,7 +343,6 @@ A worked example for both ML and docking-style methods is in
 - [`METRICS.md`](METRICS.md) — metric definitions and code pointers
 - [`SOFT_SPLIT_REGISTRY.md`](SOFT_SPLIT_REGISTRY.md) — soft-split construction
 - [`benchmarks/05_pdbbind_comparison/GEMS_INTEGRATION.md`](benchmarks/05_pdbbind_comparison/GEMS_INTEGRATION.md) — PDBbind / GEMS comparison
-- [`docs/CARC_PARALLEL_GUIDE.md`](docs/CARC_PARALLEL_GUIDE.md) — running on the CARC cluster
 
 ---
 
