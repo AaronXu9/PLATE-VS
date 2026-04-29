@@ -1,4 +1,4 @@
-# VLS-Benchmark-Dataset
+# PLATE-VS
 
 A virtual-screening (VS) benchmark built on the **PLATE-VS** dataset, with reference
 implementations for classical ML, deep-learning, and structure-based docking methods.
@@ -197,7 +197,7 @@ Full definitions and code pointers in [`METRICS.md`](METRICS.md).
 ## 3. Repository layout
 
 ```
-VLS-Benchmark-Dataset/
+PLATE-VS/
 ├── benchmarks/
 │   ├── 01_preprocessing/        # Build registry, assign splits, select structures
 │   ├── 02_training/             # Classical ML + DeepPurpose
