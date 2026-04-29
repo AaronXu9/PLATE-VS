@@ -157,3 +157,6 @@ figs/
 trained_models/**/*.pkl
 trained_models/**/*.log
 trained_models/**/*_protein_mapping.json
+
+# Claude Code local state — never commit
+.claude/
