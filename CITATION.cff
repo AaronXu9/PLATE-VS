@@ -12,18 +12,22 @@ authors:
     given-names: Ao
     email: aoxu@usc.edu
     affiliation: "Department of Computer Science, University of Southern California, USA"
+    orcid: "https://orcid.org/0009-0008-3114-111X"
   - family-names: Hong
     given-names: Yongchan
     email: hongyong@usc.edu
     affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+    orcid: "https://orcid.org/0009-0009-8866-1690"
   - family-names: Lam
     given-names: "Jordy Homing"
     email: homingla@usc.edu
     affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+    orcid: "https://orcid.org/0000-0002-5496-6228"
   - family-names: Katritch
     given-names: Vsevolod
     email: katritch@usc.edu
     affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
+    orcid: "https://orcid.org/0000-0003-3883-4505"
 keywords:
   - virtual screening
   - drug discovery
