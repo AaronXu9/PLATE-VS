@@ -12,6 +12,34 @@ for cross-dataset comparison against published baselines such as GEMS.
 For step-by-step usage, see [`benchmarks/BENCHMARKING_GUIDE.md`](benchmarks/BENCHMARKING_GUIDE.md).
 For metric definitions, see [`METRICS.md`](METRICS.md).
 
+## Citing this work
+
+If you use this code, please cite both the paper and the archived release.
+Machine-readable metadata for the release is in [`CITATION.cff`](CITATION.cff)
+(also published to Zenodo on each tagged release):
+
+> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *VLS-Benchmark-Dataset: PLATE-VS
+> virtual screening benchmark*. v1.0.0. Zenodo. DOI: `10.5281/zenodo.XXXXXXX`.
+
+Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors. Replace
+`XXXXXXX` with the concept DOI shown on the Zenodo record once it is minted.
+
+## Reproducing from the Zenodo archive
+
+The Zenodo tarball mirrors the GitHub source archive — it does **not** include
+the submodule contents under `external/`. To reproduce results from the
+archive:
+
+1. Download and extract the Zenodo tarball, **or** clone with submodules from
+   GitHub:
+   ```bash
+   git clone --recursive https://github.com/AaronXu9/PLATE-VS
+   cd PLATE-VS && git checkout v1.0.0
+   ```
+2. Bulk training data and model checkpoints are not part of the code archive.
+   See [`benchmarks/BENCHMARKING_GUIDE.md`](benchmarks/BENCHMARKING_GUIDE.md)
+   for download/regeneration steps.
+
 ---
 
 ## 1. Dataset
