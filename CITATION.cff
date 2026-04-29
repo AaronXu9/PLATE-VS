@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "PLATE-VS: virtual screening benchmark"
+title: "PLATE-VS: a web server for protein–ligand assay curation and cross-target virtual screening datasets — code archive"
 type: software
 version: 1.0.0
 date-released: "2026-04-29"
@@ -29,13 +29,14 @@ authors:
     affiliation: "Department of Quantitative and Computational Biology, University of Southern California, USA"
     orcid: "https://orcid.org/0000-0003-3883-4505"
 keywords:
-  - virtual screening
-  - drug discovery
+  - cheminformatics
+  - ChEMBL
   - protein-ligand binding
-  - benchmark
+  - virtual screening
+  - data curation
   - machine learning
   - deep learning
+  - benchmark
   - molecular docking
   - PDBbind
-  - ChEMBL
   - GNINA

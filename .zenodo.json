@@ -1,6 +1,6 @@
 {
-  "title": "PLATE-VS: virtual screening benchmark",
-  "description": "Reference implementations (classical ML, deep-learning, structure-based docking with GNINA, custom dual-encoder DL) for the PLATE-VS protein-ligand virtual screening benchmark, with a companion PDBbind CleanSplit affinity-regression track. Code archive accompanying the Nucleic Acids Research publication. Authors Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors.",
+  "title": "PLATE-VS: a web server for protein–ligand assay curation and cross-target virtual screening datasets — code archive",
+  "description": "Code archive accompanying the Nucleic Acids Research Web Server paper 'PLATE-VS: a web server for protein–ligand assay curation and cross-target virtual screening datasets' (Xu, Hong, Lam, Katritch, 2026). PLATE-VS (Protein-Ligand Affinity-based Target Evaluation – Virtual Screening) integrates protein structural information, ligand activity data, and property-matched decoys to produce training-ready datasets for virtual screening and molecular machine learning, with principled train/test splits spanning a range of difficulty from similar ligand-receptor pairs to challenging cross-target generalisation. The web server is at https://www.drugbench.org/. This repository provides reference benchmark implementations: classical ML (RF/GBM/SVM), deep learning (DeepDTA, GraphDTA, custom dual-encoder ESM2 + ligand encoder), and structure-based docking with GNINA, plus a companion PDBbind CleanSplit affinity-regression track for cross-dataset comparison against published baselines such as GEMS. Authors Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors.",
   "license": "MIT",
   "upload_type": "software",
   "access_right": "open",
@@ -27,15 +27,16 @@
     }
   ],
   "keywords": [
-    "virtual screening",
-    "drug discovery",
+    "cheminformatics",
+    "ChEMBL",
     "protein-ligand binding",
-    "benchmark",
+    "virtual screening",
+    "data curation",
     "machine learning",
     "deep learning",
+    "benchmark",
     "molecular docking",
     "PDBbind",
-    "ChEMBL",
     "GNINA"
   ],
   "related_identifiers": [

@@ -1,13 +1,30 @@
 # PLATE-VS
 
-A virtual-screening (VS) benchmark built on the **PLATE-VS** dataset, with reference
-implementations for classical ML, deep-learning, and structure-based docking methods.
-The benchmark is designed so that every test sample probes a generalisation axis —
-either novel protein, novel ligand chemistry, or both — making it substantially harder
-than memorisation-friendly benchmarks.
+**Protein-Ligand Affinity-based Target Evaluation – Virtual Screening**
 
-A companion track on **PDBbind CleanSplit** (binding-affinity regression) is included
-for cross-dataset comparison against published baselines such as GEMS.
+This repository is the code archive accompanying the *Nucleic Acids Research*
+Web Server paper:
+
+> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *PLATE-VS: a web server for
+> protein–ligand assay curation and cross-target virtual screening datasets.*
+> Nucleic Acids Research, 2026.
+
+The PLATE-VS web server is at **<https://www.drugbench.org/>**.
+
+PLATE-VS integrates protein structural information, ligand activity data, and
+property-matched decoys to produce training-ready datasets for virtual screening
+and molecular machine learning, with principled train/test splits spanning a
+range of difficulty — from similar ligand-receptor pairs to challenging
+cross-target generalisation.
+
+This repository provides the reference benchmark implementations: classical ML
+(RF / GBM / SVM), deep learning (DeepDTA, GraphDTA, and a custom dual-encoder
+ESM2 + ligand encoder), and structure-based docking with GNINA, plus a companion
+**PDBbind CleanSplit** affinity-regression track for cross-dataset comparison
+against published baselines such as GEMS. The benchmark is designed so that
+every test sample probes a generalisation axis — novel protein, novel ligand
+chemistry, or both — making it substantially harder than memorisation-friendly
+benchmarks.
 
 For step-by-step usage, see [`benchmarks/BENCHMARKING_GUIDE.md`](benchmarks/BENCHMARKING_GUIDE.md).
 For metric definitions, see [`METRICS.md`](METRICS.md).
@@ -18,8 +35,10 @@ If you use this code, please cite both the paper and the archived release.
 Machine-readable metadata for the release is in [`CITATION.cff`](CITATION.cff)
 (also published to Zenodo on each tagged release):
 
-> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *PLATE-VS: virtual screening
-> benchmark*. v1.0.0. Zenodo. DOI: `10.5281/zenodo.XXXXXXX`.
+> Xu, A.; Hong, Y.; Lam, J. H.; Katritch, V. *PLATE-VS: a web server for
+> protein–ligand assay curation and cross-target virtual screening datasets.*
+> Nucleic Acids Research, 2026. Code archive: Zenodo,
+> DOI `10.5281/zenodo.XXXXXXX`.
 
 Ao Xu, Yongchan Hong, and Jordy Homing Lam are joint first authors. Replace
 `XXXXXXX` with the concept DOI shown on the Zenodo record once it is minted.
