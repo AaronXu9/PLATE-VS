@@ -17,6 +17,8 @@ CONFIGS=(
     "soft_schnet   benchmarks/07_plate_vs_dl/configs/vs_soft_schnet.yaml"
     "hard_et_v2    benchmarks/07_plate_vs_dl/configs/vs_hard_et_v2.yaml"
     "soft_et_v2    benchmarks/07_plate_vs_dl/configs/vs_soft_et_v2.yaml"
+    "hard_et_v3    benchmarks/07_plate_vs_dl/configs/vs_hard_et_v3.yaml"
+    "soft_et_v3    benchmarks/07_plate_vs_dl/configs/vs_soft_et_v3.yaml"
 )
 
 FILTER="${1:-}"

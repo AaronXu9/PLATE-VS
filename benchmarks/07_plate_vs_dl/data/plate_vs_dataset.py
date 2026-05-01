@@ -171,6 +171,23 @@ class PlateVSDataset(Dataset):
         # Defend against degenerate single-atom inputs (would NaN ET attention).
         if lig_data["z"].shape[0] < 2:
             return None
+        # Defend against atoms at identical coordinates (disconnected ionic salts —
+        # RDKit places counter-ions at origin, blowing up ET's 1/r attention).
+        # 0.17% of cached conformers have min pairwise distance = 0; rejecting
+        # them costs almost nothing and is essential for TorchMD-NET ET stability.
+        pos = lig_data["pos"]
+        if pos.shape[0] >= 2:
+            n = pos.shape[0]
+            # Pairwise distances; cheap for n <= max_ligand_atoms (~80).
+            diff = pos.unsqueeze(0) - pos.unsqueeze(1)         # [n, n, 3]
+            dist2 = (diff * diff).sum(-1)                      # [n, n]
+            dist2.fill_diagonal_(float("inf"))
+            if dist2.min() < 0.01:                             # i.e. <0.1 Å
+                self._n_collapsed = getattr(self, "_n_collapsed", 0) + 1
+                if self._n_collapsed in (1, 10, 100, 1000) or self._n_collapsed % 10000 == 0:
+                    print(f"  WARNING: {self._n_collapsed} samples skipped "
+                          f"(collapsed atom positions). Latest SMILES: {smiles[:80]}")
+                return None
 
         # Protein embedding
         prot_emb = torch.tensor(

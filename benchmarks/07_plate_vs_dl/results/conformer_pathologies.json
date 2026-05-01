@@ -1,0 +1,74 @@
+{
+  "cache_path": "data/plate_vs_conformers/conformers_full.pkl",
+  "n_total": 2281525,
+  "counts": {
+    "ok": 2277534,
+    "min_dist_danger": 3991
+  },
+  "min_dist_percentiles": {
+    "p1": 1.1309431505203253,
+    "p5": 1.160831093788147,
+    "p50": 1.2259472608566284,
+    "p95": 1.3422123193740845,
+    "p99": 1.3698512315750122
+  },
+  "examples": {
+    "nan_inf": [],
+    "min_dist_danger": [
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c(C([H])([H])C([H])([H])N(C([H])([H])[H])C([H])([H])[H])c([H])c(F)c1F)c1nc(N([H])[H])c([H])c(C([H]",
+        "n_atoms": 25,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(C#N)c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(C#N)c([H])c1S(=O)(=O)[O-].[Na+].[Na+]",
+        "n_atoms": 28,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(I)c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(I)c([H])c1S(=O)(=O)[O-].[K+].[K+]",
+        "n_atoms": 26,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[Cl-].[H]c1c([H])c(S(=O)(=O)N([H])[H])c([H])c([H])c1C([H])([H])C([H])([H])N([H])C(=S)N([H])C(=O)C([H])([H])N([H])[H].[Na",
+        "n_atoms": 22,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N([H])C(=O)C([H])([H])[H])c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(N=C=S)c([H])c1S(=O)(=O)[O-",
+        "n_atoms": 31,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N([H])C(=O)Oc2c([H])c([H])c([H])c([H])c2[H])c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(N([H])C(",
+        "n_atoms": 44,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N([H])C(=O)c2c([H])c([H])c(OC([H])([H])[H])c([H])c2[H])c([H])c1S(=O)(=O)[O-])c1c([H])c([H]",
+        "n_atoms": 46,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N([H])S(=O)(=O)c2c([H])c([H])c(C([H])([H])[H])c([H])c2[H])c([H])c1S(=O)(=O)[O-])c1c([H])c(",
+        "n_atoms": 46,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N([H])S(=O)(=O)c2c([H])c([H])c([H])c([H])c2[H])c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(N([H]",
+        "n_atoms": 44,
+        "min_pairwise_dist": 0.0
+      },
+      {
+        "smiles": "[H]/C(=C(/[H])c1c([H])c([H])c(N=C=S)c([H])c1S(=O)(=O)[O-])c1c([H])c([H])c(N=C=S)c([H])c1S(=O)(=O)[O-].[Na+].[Na+]",
+        "n_atoms": 30,
+        "min_pairwise_dist": 0.0
+      }
+    ],
+    "huge_coord": [],
+    "single_atom": [],
+    "weird_z": [],
+    "ok": []
+  }
+}
