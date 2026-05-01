@@ -73,6 +73,7 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
     model.train()
     total_loss = 0.0
     n_samples = 0
+    n_skipped_nan = 0
 
     for batch in loader:
         if batch is None:
@@ -81,7 +82,21 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
         optimizer.zero_grad()
 
         logits = model(batch)
+        # Guard: NaN/Inf in forward pass (TorchMD-NET ET sometimes emits these
+        # on degenerate inputs). Skip the batch entirely; the optimizer state
+        # stays clean since we never call .step() on a poisoned gradient.
+        if not torch.isfinite(logits).all():
+            n_skipped_nan += 1
+            if n_skipped_nan in (1, 10, 100) or n_skipped_nan % 1000 == 0:
+                print(f"  WARNING: skipped {n_skipped_nan} batches with non-finite logits")
+            scheduler.step()  # advance LR schedule even on skip
+            continue
+
         loss = criterion(logits.squeeze(-1), batch.y.squeeze(-1))
+        if not torch.isfinite(loss):
+            n_skipped_nan += 1
+            scheduler.step()
+            continue
 
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -92,6 +107,8 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, device, grad_cli
         total_loss += loss.item() * bs
         n_samples += bs
 
+    if n_samples == 0:
+        return float("nan")
     return total_loss / n_samples
 
 

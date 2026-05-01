@@ -11,10 +11,12 @@
 set -euo pipefail
 
 CONFIGS=(
-    "hard_et      benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml"
-    "hard_schnet  benchmarks/07_plate_vs_dl/configs/vs_hard_schnet.yaml"
-    "soft_et      benchmarks/07_plate_vs_dl/configs/vs_soft_et.yaml"
-    "soft_schnet  benchmarks/07_plate_vs_dl/configs/vs_soft_schnet.yaml"
+    "hard_et       benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml"
+    "hard_schnet   benchmarks/07_plate_vs_dl/configs/vs_hard_schnet.yaml"
+    "soft_et       benchmarks/07_plate_vs_dl/configs/vs_soft_et.yaml"
+    "soft_schnet   benchmarks/07_plate_vs_dl/configs/vs_soft_schnet.yaml"
+    "hard_et_v2    benchmarks/07_plate_vs_dl/configs/vs_hard_et_v2.yaml"
+    "soft_et_v2    benchmarks/07_plate_vs_dl/configs/vs_soft_et_v2.yaml"
 )
 
 FILTER="${1:-}"
