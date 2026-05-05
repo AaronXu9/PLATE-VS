@@ -238,6 +238,20 @@ def main():
     labels = np.array(all_labels)
     uids = np.array(all_uids)
 
+    # Filter NaN/Inf scores. TorchMD-NET ET produces non-finite logits on
+    # some inputs even after the dataset-level conformer filter; sklearn's
+    # roc_auc_score refuses arrays with NaN. Drop those samples from the
+    # metric and record the count.
+    n_total = len(scores)
+    valid = np.isfinite(scores)
+    n_dropped_nan = int(n_total - valid.sum())
+    if n_dropped_nan > 0:
+        print(f"  WARNING: dropping {n_dropped_nan}/{n_total} samples with non-finite scores "
+              f"({n_dropped_nan/n_total*100:.2f}%) before metric computation")
+        scores = scores[valid]
+        labels = labels[valid]
+        uids = uids[valid]
+
     # Global metrics
     roc_auc = roc_auc_score(labels, scores)
     ap = average_precision_score(labels, scores)
@@ -312,7 +326,8 @@ def main():
         "per_target_ef_1pct_mean": round(pt_ef1_mean, 6) if pt_ef1 else None,
         "per_target_ef_5pct_mean": round(pt_ef5_mean, 6) if pt_ef5 else None,
         "n_targets": len(per_target),
-        "n_samples": len(scores),
+        "n_samples": int(len(scores)),
+        "n_dropped_nan": n_dropped_nan,
         "per_target_detail": per_target,
     }
 
