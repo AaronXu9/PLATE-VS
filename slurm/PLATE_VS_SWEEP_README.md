@@ -1,59 +1,64 @@
 # PLATE-VS Dual-Encoder Sweep on CARC
 
-4-job sweep covering `{hard, soft} × {torchmd_et, schnet}` with
-auto-evaluation on real ChEMBL inactives.
+## Split definitions (post-2026-05-07 rename)
+
+The split names were **clarified** after we discovered the original "hard"
+config wasn't actually a hard generalization test — proteins overlapped
+~91% between train and test. Current convention:
+
+| Split | Filter | Test set | Generalization tested |
+|-------|--------|----------|----------------------|
+| **`hard`** (true 2D) | `split=='test' AND protein_partition=='test'` | 87 proteins, 20K actives | **Both** novel proteins AND novel ligands |
+| **`soft`** | `protein_partition=='test'` | 97 proteins, 42K actives | Novel proteins (ligand similarity unconstrained) |
+| **`ligand_novel`** (legacy) | `split=='test'` | 678 proteins, 127K actives | Novel ligands only — proteins overlap with train |
+
+Both `hard` and `soft` use `registry_soft_split.csv` (which carries both
+columns). `ligand_novel` configs use `registry_2d_split.csv` and represent
+the *easy* baseline (kept for reference).
 
 ## Prerequisites on CARC
 
 1. **Code synced**: `/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset` is up to date with `main`
-2. **Conformer cache**: `data/plate_vs_conformers/conformers_full.pkl` (1.84 GB) must exist on CARC.
-   If it doesn't, rsync from local:
-   ```bash
-   rsync -avP data/plate_vs_conformers/conformers_full.pkl \
-       carc:/project2/katritch_223/aoxu/projects/VLS-Benchmark-Dataset/data/plate_vs_conformers/
-   ```
-3. **Conda env**: `binding_affinity` with `torchmd-net` (already set up per `benchmarks/envs/env_binding_affinity.yml`)
-4. **Registry files**: Both `registry_2d_split.csv` and `registry_soft_split_regression.csv` present in `training_data_full/`
+2. **Conformer cache**: `data/plate_vs_conformers/conformers_full.pkl` (1.84 GB) must exist on CARC
+3. **Conda env**: `binding_affinity` with `torchmd-net`
+4. **Registry files**: `registry_soft_split.csv` (training) and `registry_soft_split_regression.csv` (real-inactive eval) in `training_data_full/`
 
 ## Quick start
 
-From the CARC project root:
-
 ```bash
-# Create logs directory
 mkdir -p slurm/logs
 
-# Submit all 4 jobs at once
-bash slurm/submit_plate_vs_sweep.sh
+# Headline jobs (true hard 2D split)
+bash slurm/submit_plate_vs_sweep.sh hard_schnet
+bash slurm/submit_plate_vs_sweep.sh hard_et
 
-# Or submit a single variant
-bash slurm/submit_plate_vs_sweep.sh hard_et      # hard split, TorchMD-NET ET
-bash slurm/submit_plate_vs_sweep.sh hard_schnet  # hard split, SchNet
-bash slurm/submit_plate_vs_sweep.sh soft_et      # soft split, TorchMD-NET ET
-bash slurm/submit_plate_vs_sweep.sh soft_schnet  # soft split, SchNet
+# Soft (protein-novel only)
+bash slurm/submit_plate_vs_sweep.sh soft_schnet
+bash slurm/submit_plate_vs_sweep.sh soft_et_v2
+
+# Legacy / baseline (ligand-novel only)
+bash slurm/submit_plate_vs_sweep.sh ligand_novel_schnet
 ```
 
-## Job configuration
+## Available tags
 
-Each job:
-- Partition: `gpu`, account: `katritch_223`, 1 GPU, 8 CPUs, 64 GB RAM, 12h
+| Tag | Split | Backend | Notes |
+|-----|-------|---------|-------|
+| `hard_schnet` | TRUE 2D | SchNet (4L) | Strictest, primary baseline |
+| `hard_et` | TRUE 2D | TorchMD-ET (4L, v2 HP) | Strictest, ET version |
+| `soft_schnet` | protein-novel | SchNet | Already trained — see `soft_schnet_*.json` |
+| `soft_et` | protein-novel | TorchMD-ET (6L original) | NaN'd; use v2 |
+| `soft_et_v2` | protein-novel | TorchMD-ET (4L, conservative HP) | Already trained |
+| `soft_et_v3` | protein-novel | TorchMD-ET (6L, aggressive HP) | Untried |
+| `ligand_novel_schnet` | legacy ligand-novel | SchNet | Already trained — see `hard_schnet_*.json` (renamed) |
+| `ligand_novel_et_v2` | legacy ligand-novel | TorchMD-ET (4L) | Already trained |
+
+## SLURM job spec
+
+- Partition: `gpu`, account: `katritch_223`, 1 GPU, 8 CPUs, 64 GB RAM, 36h
+- Trains via `python -u benchmarks/07_plate_vs_dl/train_vs.py --config <yaml>`
+- Auto-evals on real ChEMBL inactives if training completes cleanly
 - Logs: `slurm/logs/plate_vs_dl_pvs_<tag>_<jobid>.{out,err}`
-- Trains via `python benchmarks/07_plate_vs_dl/train_vs.py --config <yaml>`
-- Auto-evals on real ChEMBL inactives (pChEMBL ≥ 6 vs < 5)
-
-| Tag | Split | Backend | Config |
-|---|---|---|---|
-| `hard_et` | hard (`registry_2d_split.csv`) | TorchMD-NET ET (6 layers) | `vs_hard_et.yaml` |
-| `hard_schnet` | hard | SchNet (4 layers) | `vs_hard_schnet.yaml` |
-| `soft_et` | soft (`protein_partition`) | TorchMD-NET ET (6 layers) | `vs_soft_et.yaml` |
-| `soft_schnet` | soft | SchNet (4 layers) | `vs_soft_schnet.yaml` |
-
-## Monitor
-
-```bash
-squeue --me                            # see queued/running jobs
-tail -f slurm/logs/plate_vs_dl_pvs_hard_et_<JOBID>.out
-```
 
 ## Outputs
 
@@ -61,25 +66,28 @@ After each job:
 - Checkpoint: `benchmarks/07_plate_vs_dl/checkpoints_<tag>/best_vs_model.pt`
 - Training summary: `benchmarks/07_plate_vs_dl/results/<tag>_training_summary.json`
 - Real-inactives eval: `benchmarks/07_plate_vs_dl/results/<tag>_real_inactives_eval.json`
-- W&B run logged under project `plate-vs-dl` with the tag in run name
+- W&B run under project `plate-vs-dl`
 
 ## Re-running just the eval (no retrain)
 
 ```bash
-python benchmarks/07_plate_vs_dl/eval_real_inactives.py \
-    --checkpoint benchmarks/07_plate_vs_dl/checkpoints_hard_et/best_vs_model.pt \
-    --config benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml \
-    --output benchmarks/07_plate_vs_dl/results/hard_et_real_inactives_eval.json
+sbatch --job-name=eval_hard_et \
+    --export=ALL,CKPT=benchmarks/07_plate_vs_dl/checkpoints_hard_et/best_vs_model.pt,\
+CONFIG=benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml,RESULT_TAG=hard_et \
+    slurm/run_eval_real_inactives.slurm
 ```
 
 ## Notes / gotchas
 
-- Train+eval writes `vs_0p7_training_summary.json` (the default name) into
-  `benchmarks/07_plate_vs_dl/results/`. The SLURM wrapper immediately copies
-  it to `<tag>_training_summary.json` so concurrent jobs don't lose data.
-  But if two jobs finish *exactly* simultaneously, there's a tiny race.
-  Stagger submissions or check `<tag>_training_summary.json` first.
-- TorchMD-NET on CARC is custom-patched (per `METHODS.md`). If you see
-  import errors, try the SchNet variants — they're guaranteed to work.
-- 12h SLURM time limit is generous; previous local runs early-stopped at
-  epoch 13 in ~10h on a 4090. CARC GPUs (V100/A100) should be similar or faster.
+- Train+eval writes `vs_0p7_training_summary.json` (default name) into
+  `benchmarks/07_plate_vs_dl/results/`. The SLURM wrapper copies it to
+  `<tag>_training_summary.json` immediately, but two simultaneously-finishing
+  jobs are a tiny race risk.
+- TorchMD-NET on CARC is custom-patched. If `torchmd-net: NOT AVAILABLE`
+  appears in the job log, fall back to SchNet variants.
+- ET training can produce NaN logits on edge-case conformers; the dataset
+  filter and `train_vs.py` NaN guard handle this. `eval_real_inactives.py`
+  drops non-finite scores before sklearn metric calls.
+- 36h SLURM limit: SchNet runs typically complete or hit early-stop within
+  it (~2.5h/epoch on P100). ET takes longer (~2.5–3h/epoch); some jobs
+  hit the limit mid-training.

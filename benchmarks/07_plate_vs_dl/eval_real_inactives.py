@@ -55,7 +55,8 @@ class RealInactiveDataset(torch.utils.data.Dataset):
     def __init__(self, registry_path, protein_emb_path, conformer_path,
                  split, split_column, similarity_threshold,
                  active_threshold=6.0, inactive_threshold=5.0,
-                 max_ligand_atoms=80, max_pocket_res=80):
+                 max_ligand_atoms=80, max_pocket_res=80,
+                 secondary_split_column=None):
         from torch_geometric.data import Data
         self.Data = Data
         self.max_ligand_atoms = max_ligand_atoms
@@ -83,6 +84,10 @@ class RealInactiveDataset(torch.utils.data.Dataset):
                 row_thresh = row.get("similarity_threshold", "")
                 if row_split != split or row_thresh != similarity_threshold:
                     continue
+                # Optional secondary axis for true 2D split
+                if secondary_split_column is not None:
+                    if row.get(secondary_split_column, "") != split:
+                        continue
 
                 pchembl_str = row.get("pchembl", "")
                 if not pchembl_str:
@@ -185,6 +190,7 @@ def main():
         conformer_path=dc["conformer_path"],
         split="test",
         split_column=dc.get("split_column", "split"),
+        secondary_split_column=dc.get("secondary_split_column"),
         similarity_threshold=dc["similarity_threshold"],
         active_threshold=args.active_threshold,
         inactive_threshold=args.inactive_threshold,

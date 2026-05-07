@@ -54,6 +54,7 @@ class PlateVSDataset(Dataset):
         protein_partition: str | None = None,
         conformer_path: str | None = None,
         split_column: str = "split",
+        secondary_split_column: str | None = None,
     ):
         super().__init__()
         self.max_ligand_atoms = max_ligand_atoms
@@ -75,11 +76,12 @@ class PlateVSDataset(Dataset):
         print(f"  {len(self.protein_embs)} proteins loaded")
 
         # Load and filter registry
-        print(f"  Loading registry {split}/{similarity_threshold} (split_column={split_column})...")
+        sec_msg = f", secondary={secondary_split_column}=={split}" if secondary_split_column else ""
+        print(f"  Loading registry {split}/{similarity_threshold} (split_column={split_column}{sec_msg})...")
         self.samples = self._load_registry(
             registry_path, split, similarity_threshold,
             include_decoys, max_decoys_per_target, protein_partition,
-            split_column,
+            split_column, secondary_split_column,
         )
         print(f"  {len(self.samples)} samples")
 
@@ -96,12 +98,21 @@ class PlateVSDataset(Dataset):
         max_decoys_per_target: int | None,
         protein_partition: str | None,
         split_column: str = "split",
+        secondary_split_column: str | None = None,
     ) -> list[dict]:
         """Load and filter registry CSV into list of sample dicts.
 
-        When split_column="protein_partition" (soft split), actives are filtered
-        by the protein_partition column. Decoys (which all have protein_partition=
-        'train') are included for any protein that has actives in the target split.
+        Args:
+            split_column: Primary axis (typically 'split' or 'protein_partition').
+                Actives whose value in this column equals `split` are kept.
+            secondary_split_column: If provided, actives must ALSO have this
+                column equal to `split` (i.e. the SAME value as primary). This
+                enables the true 2D split: split_column='split',
+                secondary_split_column='protein_partition' requires
+                split=='test' AND protein_partition=='test'.
+
+        Decoys (all marked split='decoy', protein_partition='train' in the
+        registry) are added for any protein that has actives in the target split.
         """
         # Pass 1: collect actives and identify which proteins are in target split
         samples = []
@@ -122,6 +133,12 @@ class PlateVSDataset(Dataset):
                     row_thresh = row["similarity_threshold"]
                     if row_split != split or row_thresh != similarity_threshold:
                         continue
+                    # Optional secondary axis (true 2D split): require this
+                    # column to also equal `split` for the row to be kept.
+                    if secondary_split_column is not None:
+                        row_secondary = row.get(secondary_split_column, "")
+                        if row_secondary != split:
+                            continue
                     target_proteins.add(uid)
                     samples.append({
                         "uniprot_id": uid,

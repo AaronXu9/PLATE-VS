@@ -11,14 +11,26 @@
 set -euo pipefail
 
 CONFIGS=(
-    "hard_et       benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml"
-    "hard_schnet   benchmarks/07_plate_vs_dl/configs/vs_hard_schnet.yaml"
-    "soft_et       benchmarks/07_plate_vs_dl/configs/vs_soft_et.yaml"
-    "soft_schnet   benchmarks/07_plate_vs_dl/configs/vs_soft_schnet.yaml"
-    "hard_et_v2    benchmarks/07_plate_vs_dl/configs/vs_hard_et_v2.yaml"
-    "soft_et_v2    benchmarks/07_plate_vs_dl/configs/vs_soft_et_v2.yaml"
-    "hard_et_v3    benchmarks/07_plate_vs_dl/configs/vs_hard_et_v3.yaml"
-    "soft_et_v3    benchmarks/07_plate_vs_dl/configs/vs_soft_et_v3.yaml"
+    # Naming convention (post-2026-05-07 rename):
+    #   hard         = TRUE 2D split: novel proteins AND novel ligands (intersection)
+    #   soft         = protein-novel only (whole protein clusters held out)
+    #   ligand_novel = ligand-novel only (proteins overlap; was previously called "hard")
+
+    # === Primary (true 2D hard) ===
+    "hard_schnet           benchmarks/07_plate_vs_dl/configs/vs_hard_schnet.yaml"
+    "hard_et               benchmarks/07_plate_vs_dl/configs/vs_hard_et.yaml"
+
+    # === Soft (protein-novel only) ===
+    "soft_schnet           benchmarks/07_plate_vs_dl/configs/vs_soft_schnet.yaml"
+    "soft_et               benchmarks/07_plate_vs_dl/configs/vs_soft_et.yaml"
+    "soft_et_v2            benchmarks/07_plate_vs_dl/configs/vs_soft_et_v2.yaml"
+    "soft_et_v3            benchmarks/07_plate_vs_dl/configs/vs_soft_et_v3.yaml"
+
+    # === Ligand-novel only (legacy, was called "hard") ===
+    "ligand_novel_schnet   benchmarks/07_plate_vs_dl/configs/vs_ligand_novel_schnet.yaml"
+    "ligand_novel_et       benchmarks/07_plate_vs_dl/configs/vs_ligand_novel_et.yaml"
+    "ligand_novel_et_v2    benchmarks/07_plate_vs_dl/configs/vs_ligand_novel_et_v2.yaml"
+    "ligand_novel_et_v3    benchmarks/07_plate_vs_dl/configs/vs_ligand_novel_et_v3.yaml"
 )
 
 FILTER="${1:-}"

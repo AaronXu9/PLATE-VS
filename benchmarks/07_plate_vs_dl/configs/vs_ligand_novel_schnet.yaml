@@ -1,18 +1,11 @@
-# PLATE-VS — TRUE HARD split (2D intersection: novel proteins AND novel ligands)
-# Uses registry_soft_split.csv (which has both `split` and `protein_partition`
-# columns). secondary_split_column='protein_partition' enforces the AND
-# constraint so train and test are both novel on both axes.
-#
-# Test set: 87 proteins × ~20K actives (vs 678/127K for ligand-novel-only).
-# This is the strictest generalization benchmark.
+# PLATE-VS — HARD split, SchNet backend (CARC)
+# Comparison baseline against TorchMD-NET ET
 
 data:
-  registry_path: "../../../training_data_full/registry_soft_split.csv"
+  registry_path: "../../../training_data_full/registry_2d_split.csv"
   protein_emb_path: "../../../data/plate_vs_protein_embeddings/esm2_embeddings.npz"
   conformer_path: "../../../data/plate_vs_conformers/conformers_full.pkl"
   similarity_threshold: "0p7"
-  split_column: "split"                        # primary axis: ligand-Tanimoto
-  secondary_split_column: "protein_partition"  # secondary axis: protein cluster
   include_decoys: true
   max_decoys_per_target: 100
   batch_size: 32
@@ -23,7 +16,7 @@ data:
 model:
   esm_dim: 320
   proj_dim: 256
-  et_layers: 4
+  et_layers: 4                # SchNet uses fewer layers but interactions params
   et_heads: 8
   et_rbf: 64
   et_cutoff: 10.0
@@ -49,7 +42,7 @@ wandb:
   enabled: true
   project: "plate-vs-dl"
   entity: null
-  tags: ["plate-vs", "virtual-screening", "schnet", "0p7", "hard-2d", "carc"]
+  tags: ["plate-vs", "virtual-screening", "schnet", "0p7", "hard-split", "carc"]
 
 output:
   results_dir: "./results"
