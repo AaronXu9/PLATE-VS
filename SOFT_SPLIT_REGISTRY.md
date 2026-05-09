@@ -8,6 +8,14 @@ It is a drop-in replacement for `registry_2d_split.csv` when a less stringent ge
 
 `training_data_full/registry_soft_split_regression.csv` extends it further with pChEMBL values and assay metadata joined from `data/filtered_chembl_affinity.parquet`. Use this file for regression training.
 
+> **Naming note (post-2026-05-07).** This registry carries TWO axes — `split` (ligand-Tanimoto) and `protein_partition` (cluster). Configs in `benchmarks/07_plate_vs_dl/configs/` use these axes via `split_column` and the new `secondary_split_column` to define three regimes:
+>
+> - **`hard`** = `split=='test' AND protein_partition=='test'` (TRUE 2D, both axes novel; **strictest**)
+> - **`soft`** = `protein_partition=='test'` only (protein-novel; ligand similarity unconstrained)
+> - **`ligand_novel`** = `split=='test'` only (legacy; was previously called "hard" before the rename — proteins overlap 91% with train)
+>
+> The `protein_partition` distribution shown below reflects the **soft** assignment. The `split` column is identical to that of `registry_2d_split.csv`. See `benchmarks/07_plate_vs_dl/RESULTS_SUMMARY.md` for end-to-end results across all three regimes.
+
 ---
 
 ## Dataset Statistics
